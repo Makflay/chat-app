@@ -1,16 +1,10 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../generated/prisma/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import "../config/env";
 
-const adapter = new PrismaMariaDb({
-  host: process.env.DATABASE_HOST || "",
-  user: process.env.DATABASE_USER || "",
-  password: process.env.DATABASE_PASSWORD || "",
-  database: process.env.DATABASE_NAME || "",
-  connectionLimit: 5,
-});
+const adapter = new PrismaMariaDb(process.env.DATABASE_URL!);
 
-const prisma = new PrismaClient({ adapter });
+export const prisma = new PrismaClient({ adapter }); //{ adapter }
 
 export const connectDB = async () => {
   try {

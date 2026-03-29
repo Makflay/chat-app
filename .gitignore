@@ -12,6 +12,7 @@ backend/dist
 backend/*.log
 backend/*.local
 backend/build
+backend/src/generated/prisma
 
 # =====================================
 # Frontend
