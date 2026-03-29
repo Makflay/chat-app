@@ -1,0 +1,32 @@
+# =====================================
+# Root env, structure
+# =====================================
+.env
+STRUCTURE.md
+
+# =====================================
+# Backend
+# =====================================
+backend/node_modules
+backend/dist
+backend/*.log
+backend/*.local
+backend/build
+
+# =====================================
+# Frontend
+# =====================================
+
+
+# =====================================
+# OS / IDE
+# =====================================
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
