@@ -6,3 +6,129 @@ generator client {
 datasource db {
   provider = "mysql"
 }
+
+//////////////////////
+// ENUMS
+//////////////////////
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ChatType {
+  PRIVATE
+  GROUP
+}
+
+enum MessageStatusType {
+  SENT
+  DELIVERED
+  READ
+}
+
+//////////////////////
+// USER
+//////////////////////
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  password  String
+  name      String
+  role      Role    @default(USER)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  messages      Message[]
+  chats         ChatParticipant[]
+  messageStatus MessageStatus[]
+}
+
+//////////////////////
+// CHAT
+//////////////////////
+
+model Chat {
+  id        Int       @id @default(autoincrement())
+  type      ChatType
+  title     String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  participants  ChatParticipant[]
+  messages      Message[]
+}
+
+//////////////////////
+// CHAT PARTICIPANTS
+//////////////////////
+
+model ChatParticipant {
+  id      Int   @id @default(autoincrement())
+  userId  Int
+  chatId  Int
+
+  joinedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  chat  Chat  @relation(fields: [chatId], references: [id])
+
+  @@unique([userId, chatId])
+}
+
+//////////////////////
+// MESSAGE
+//////////////////////
+
+model Message {
+  id        Int     @id @default(autoincrement())
+  constent  String?
+  senderId  Int
+  chatId    Int
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  sender  User  @relation(fields: [senderId], references: [id])
+  chat    Chat  @relation(fields: [chatId], references: [id])
+
+  attachments   Attachments[]
+  statuses      MessageStatus[]
+
+  @@index([chatId])
+  @@index([senderId])
+}
+
+//////////////////////
+// MESSAGE STATUS (READ / DELIVERED)
+//////////////////////
+
+model MessageStatus {
+  id        Int @id @default(autoincrement())
+  messageId Int
+  userId    Int
+  status    MessageStatusType
+
+  updatedAt DateTime  @updatedAt
+
+  message Message @relation(fields: [messageId], references: [id])
+  user    User    @relation(fields: [userId], references:  [id])
+
+  @@unique([messageId, userId])
+}
+
+//////////////////////
+// ATTACHMENTS
+//////////////////////
+
+model Attachments {
+  id        Int     @id @default(autoincrement())
+  url       String
+  type      String
+  messageId Int
+
+  message Message @relation(fields: [messageId], references: [id])
+}
