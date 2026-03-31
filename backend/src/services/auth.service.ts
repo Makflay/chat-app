@@ -28,3 +28,21 @@ export const registerUser = async (
 
   return { user, token };
 };
+
+export const login = async (
+  data: AuthTypes.ILoginUser,
+): Promise<{ user: UserTypes.IUser; token: string }> => {
+  const user = await prisma.user.findUnique({ where: { email: data.email } });
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const isPassEquals = await comparePassword(data.password, user.password);
+  if (!isPassEquals) {
+    throw new Error("Wrong password");
+  }
+
+  const token = generateToken(user.id, user.role);
+
+  return { user, token };
+};

@@ -1,5 +1,9 @@
+import { Role } from "../generated/prisma";
+
 export interface IUser {
+  id: number;
   name: string;
-  email: string;
-  password: string;
+  role: Role;
+  // email: string;
+  // password: string;
 }

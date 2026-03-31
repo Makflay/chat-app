@@ -1,11 +1,10 @@
-export interface IApiResponse<T> {
-  succes: boolean;
+export interface ApiSuccessResponse<T> {
+  success: true;
   data: T;
   message?: string;
 }
 
-// export interface IAuthResponse {
-//   email: string;
-//   name: string;
-//   password: string;
-// }
+export interface ApiErrorResponse {
+  success: false;
+  message: string;
+}
