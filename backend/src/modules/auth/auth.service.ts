@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { Prisma } from "../../generated/prisma";
 import { prisma } from "../../config/db";
 import { hashPassword, comparePassword } from "../../utils/hash.password";
-import { generateToken } from "../../utils/jwt"; //, compareToken
+import { generateToken } from "../../utils/jwt";
 import "../../config/env";
 import * as AuthTypes from "../../types/auth.types";
 import * as UserTypes from "../../types/user.types";

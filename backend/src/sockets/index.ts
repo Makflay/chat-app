@@ -1,18 +1,19 @@
-import { Server } from "socket.io";
-import http from "http";
+import { Server as HttpServer } from "http";
+import { Server as SocketServer } from "socket.io";
+import { SocketData } from "../types/socket.types";
 
-export function initSocket(server: http.Server) {
-  const io = new Server(server, {
+let io: SocketServer<any, any, any, SocketData>;
+
+export const initSocket = (server: HttpServer) => {
+  io = new SocketServer<any, any, any, SocketData>(server, {
     cors: {
       origin: "*",
+      credentials: true,
     },
   });
 
-  io.on("connection", (socket) => {
-    console.log("User connected", socket.id);
-
-    //socket events
-  });
+  //middleware
+  //events
 
   return io;
-}
+};
