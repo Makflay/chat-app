@@ -9,5 +9,13 @@ export const generateToken = (userId: number, role: string): string => {
 
 export const verifyToken = (token: string) => {
   const decoded = jwt.verify(token, JWT_SECRET);
-  return decoded as { userId: number; role: string };
+  if (typeof decoded !== "object" || !decoded) {
+    throw new Error("Invalid token");
+  }
+
+  if (!("id" in decoded) || !("role" in decoded)) {
+    throw new Error("Invalid token payload");
+  }
+
+  return { id: decoded.id, role: decoded.role };
 };
