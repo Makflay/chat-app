@@ -85,7 +85,7 @@ model ChatParticipant {
 
 model Message {
   id        Int     @id @default(autoincrement())
-  constent  String?
+  content  String?
   senderId  Int
   chatId    Int
 
