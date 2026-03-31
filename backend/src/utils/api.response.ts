@@ -5,11 +5,15 @@ export const successResponse = <T>(
   data: T,
   status = 200,
   message?: string,
-) => {
+): Response => {
   return res.status(status).json({ success: true, data, message });
 };
 
-export const errorResponse = (res: Response, message: string, status = 500) => {
+export const errorResponse = (
+  res: Response,
+  message: string,
+  status = 500,
+): Response => {
   return res.status(status).json({
     success: false,
     data: null,
