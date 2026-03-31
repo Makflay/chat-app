@@ -55,3 +55,19 @@ export const login = async (req: Request, res: Response): Promise<Response> => {
     return errorResponse(res, "unknown error", 400);
   }
 };
+
+export const getCurrentUser = async (
+  req: Request,
+  res: Response,
+): Promise<Response> => {
+  try {
+    const userId = req.user!.id;
+    const user = await AuthService.getCurrentsUser(userId);
+    return successResponse(res, user);
+  } catch (error) {
+    if (error instanceof Error) {
+      return errorResponse(res, error.message, 400);
+    }
+    return errorResponse(res, "Uknown error", 400);
+  }
+};

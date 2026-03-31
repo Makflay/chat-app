@@ -46,3 +46,17 @@ export const login = async (
 
   return { user, token };
 };
+
+export const getCurrentsUser = async (
+  userId: number,
+): Promise<UserTypes.IUser | null> => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return user;
+};
