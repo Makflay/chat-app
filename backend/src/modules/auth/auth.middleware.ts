@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyToken } from "../utils/jwt";
-import { errorResponse } from "../utils/api.response";
+import { verifyToken } from "../../utils/jwt";
+import { errorResponse } from "../../utils/api.response";
 
 export const protect = (
   req: Request,

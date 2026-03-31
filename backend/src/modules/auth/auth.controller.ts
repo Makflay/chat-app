@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import * as AuthService from "../services/auth.service";
-import * as AuthTypes from "../types/auth.types";
-import { successResponse, errorResponse } from "../utils/api.response";
+import * as AuthService from "./auth.service";
+import * as AuthTypes from "../../types/auth.types";
+import { successResponse, errorResponse } from "../../utils/api.response";
 
 export const register = async (
   req: Request,
