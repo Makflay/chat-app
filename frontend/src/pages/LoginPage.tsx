@@ -9,12 +9,16 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/auth-store";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login, isLoading, error, clearError } = useAuthStore();
+  const login = useAuthStore((store) => store.login);
+  const isLoading = useAuthStore((store) => store.isLoading);
+  const error = useAuthStore((store) => store.error);
+  const clearError = useAuthStore((store) => store.clearError);
+  //const { login, isLoading, error, clearError } = useAuthStore();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,8 +29,8 @@ const LoginPage = () => {
 
     await login({ email, password });
 
-    const { isAuth } = useAuthStore.getState();
-    if (isAuth) {
+    const { token, user } = useAuthStore.getState();
+    if (token && user) {
       navigate("/chat");
     }
   };

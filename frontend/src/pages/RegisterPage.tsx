@@ -9,12 +9,16 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/auth-store";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const { register, isLoading, error, clearError } = useAuthStore();
+  const register = useAuthStore((store) => store.register);
+  const isLoading = useAuthStore((store) => store.isLoading);
+  const error = useAuthStore((store) => store.error);
+  const clearError = useAuthStore((store) => store.clearError);
+  //const { register, isLoading, error, clearError } = useAuthStore();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -26,8 +30,8 @@ const RegisterPage = () => {
 
     await register({ username, email, password });
 
-    const { isAuth } = useAuthStore.getState();
-    if (isAuth) {
+    const { token, user } = useAuthStore.getState();
+    if (token && user) {
       navigate("/chat");
     }
   };

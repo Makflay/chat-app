@@ -1,7 +1,15 @@
 import type { User } from "./user-types";
 
-export interface AuthResponse {
+// export interface AuthResponse {
+//   user: User;
+//   token: string;
+// }
+
+export interface CurrentUserPayload {
   user: User;
+}
+
+export interface AuthPayload extends CurrentUserPayload {
   token: string;
 }
 

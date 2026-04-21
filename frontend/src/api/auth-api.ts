@@ -1,21 +1,25 @@
 import apiClient from "./api-client";
-import type { LoginDto, AuthResponse } from "../types/auth-api-types";
+import type {
+  CurrentUserPayload,
+  AuthPayload,
+  LoginDto,
+} from "../types/auth-api-types";
 
-export const login = (dto: LoginDto): Promise<AuthResponse> => {
+export const login = (dto: LoginDto): Promise<AuthPayload> => {
   return apiClient("/auth/login", {
     method: "POST",
     body: JSON.stringify(dto),
   });
 };
 
-export const register = (dto: LoginDto): Promise<AuthResponse> => {
+export const register = (dto: LoginDto): Promise<AuthPayload> => {
   return apiClient("/auth/register", {
     method: "POST",
     body: JSON.stringify(dto),
   });
 };
 
-export const getCurrentUser = (): Promise<AuthResponse> => {
+export const getCurrentUser = (): Promise<CurrentUserPayload> => {
   return apiClient("/auth/me", {
     method: "GET",
   });
