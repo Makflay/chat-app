@@ -82,7 +82,7 @@ npm install
 
 ### 3. Environment variables
 
-Create a `.env` file inside the **chat-app** folder:
+Create a `.env` file inside the **chat-app** folder based on `.env.example`:
 
 ---
 
