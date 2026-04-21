@@ -10,6 +10,6 @@ app.get("/", (req, res) => {
   res.send("ok");
 });
 
-app.use("api/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 
 export default app;

@@ -1,16 +1,18 @@
-import { Prisma } from "../generated/prisma";
+import { Prisma, Role } from "../generated/prisma";
 import { prisma } from "./db";
 import { hashPassword } from "../utils/hash.password";
 import "./env";
+import { attachUserToGroupChat } from "../modules/chat/group.chat.service";
+import { attachChatBotForUser } from "../modules/chat/bot.chat.service";
 
-export const seedAdmin = async () => {
+export const seedAdmin = async (): Promise<void> => {
   try {
     const adminName = process.env.ADMIN_NAME!;
     const adminEmail = process.env.ADMIN_EMAIL!;
     const adminPassword = process.env.ADMIN_PASSWORD!;
 
     if (!adminName || !adminEmail || !adminPassword) {
-      console.error("Admin credentials are not set in .env");
+      console.log("Admin credentials are not set in .env");
       return;
     }
 
@@ -26,12 +28,18 @@ export const seedAdmin = async () => {
     const newAdmin: Prisma.UserCreateInput = {
       email: adminEmail,
       password: hashedPassword,
-      name: adminName,
-      role: "ADMIN",
+      username: adminName,
+      role: Role.ADMIN,
     };
-    await prisma.user.create({ data: newAdmin });
+    const admin = await prisma.user.create({ data: newAdmin });
+    await attachChatBotForUser(admin.id);
+    await attachUserToGroupChat(admin.id);
     console.log("Admin created successfully");
   } catch (error) {
-    console.error("Error seeding admin:", error);
+    if (error instanceof Error) {
+      throw new Error(`Creating seed admin error: ${error}`);
+    } else {
+      throw new Error("Creating seed admin unknown error");
+    }
   }
 };
