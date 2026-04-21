@@ -5,7 +5,7 @@ import { protect } from "../modules/auth/auth.middleware";
 const router = Router();
 
 router.post("/register", AuthController.register);
-router.post("login", AuthController.login);
+router.post("/login", AuthController.login);
 router.get("/me", protect, AuthController.getCurrentUser);
 
 export default router;

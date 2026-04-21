@@ -1,15 +1,16 @@
-import jwt from "jsonwebtoken";
 import { Prisma } from "../../generated/prisma";
 import { prisma } from "../../config/db";
 import { hashPassword, comparePassword } from "../../utils/hash.password";
 import { generateToken } from "../../utils/jwt";
 import "../../config/env";
-import * as AuthTypes from "../../types/auth.types";
-import * as UserTypes from "../../types/user.types";
+import { RegisterUser, LoginUser } from "../../types/auth.types";
+import { User } from "../../types/user.types";
+import { attachChatBotForUser } from "../chat/bot.chat.service";
+import { attachUserToGroupChat } from "../chat/group.chat.service";
 
 export const registerUser = async (
-  data: AuthTypes.IRegisterUser,
-): Promise<{ user: UserTypes.IUser; token: string }> => {
+  data: RegisterUser,
+): Promise<{ user: User; token: string }> => {
   const exitingUser = await prisma.user.findUnique({
     where: { email: data.email },
   });
@@ -21,37 +22,77 @@ export const registerUser = async (
   const newUser: Prisma.UserCreateInput = {
     email: data.email,
     password: hashedPassword,
-    name: data.name,
+    username: data.username,
   };
-  const user = await prisma.user.create({ data: newUser });
+  const user = await prisma.user.create({
+    data: newUser,
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      role: true,
+      isBot: true,
+    },
+  });
+  await attachChatBotForUser(user.id);
+  await attachUserToGroupChat(user.id);
   const token = generateToken(user.id, user.role);
 
   return { user, token };
 };
 
 export const login = async (
-  data: AuthTypes.ILoginUser,
-): Promise<{ user: UserTypes.IUser; token: string }> => {
-  const user = await prisma.user.findUnique({ where: { email: data.email } });
-  if (!user) {
+  data: LoginUser,
+): Promise<{ user: User; token: string }> => {
+  const secretUser = await prisma.user.findUnique({
+    where: { email: data.email },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      role: true,
+      isBot: true,
+      password: true,
+    },
+  });
+  if (!secretUser) {
     throw new Error("User not found");
   }
 
-  const isPassEquals = await comparePassword(data.password, user.password);
+  if (secretUser.isBot) {
+    throw new Error("Invalid credentials");
+  }
+
+  const isPassEquals = await comparePassword(
+    data.password,
+    secretUser.password,
+  );
   if (!isPassEquals) {
     throw new Error("Wrong password");
   }
 
-  const token = generateToken(user.id, user.role);
+  const token = generateToken(secretUser.id, secretUser.role);
+  const user: User = {
+    id: secretUser.id,
+    username: secretUser.username,
+    email: secretUser.email,
+    role: secretUser.role,
+    isBot: secretUser.isBot,
+  };
 
   return { user, token };
 };
 
-export const getCurrentsUser = async (
-  userId: number,
-): Promise<UserTypes.IUser | null> => {
+export const getCurrentUser = async (userId: number): Promise<User> => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      role: true,
+      isBot: true,
+    },
   });
 
   if (!user) {

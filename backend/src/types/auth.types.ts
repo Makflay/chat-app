@@ -1,21 +1,22 @@
 import { Role } from "../generated/prisma";
+import type { User } from "./user.types";
 
-export interface IRegisterUser {
-  email: string;
-  name: string;
-  password: string;
+export interface CurrentUserPayload {
+  user: User;
 }
-
-export interface ILoginUser {
-  email: string;
-  password: string;
-}
-
-export interface IAuthResponseData {
-  id: number;
-  name: string;
-  role: string;
+export interface AuthPayload extends CurrentUserPayload {
   token: string;
+}
+
+export interface RegisterUser {
+  email: string;
+  username: string;
+  password: string;
+}
+
+export interface LoginUser {
+  email: string;
+  password: string;
 }
 
 export interface JwtPayload {

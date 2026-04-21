@@ -14,9 +14,9 @@ export const verifyToken = (token: string): JwtPayload => {
     throw new Error("Invalid token");
   }
 
-  if (!("id" in decoded) || !("role" in decoded)) {
+  if (!("userId" in decoded) || !("role" in decoded)) {
     throw new Error("Invalid token payload");
   }
 
-  return { id: decoded.id, role: decoded.role };
+  return { id: decoded.userId, role: decoded.role };
 };
