@@ -10,13 +10,13 @@ export const registerSocketMiddleware = (
       const token = socket.handshake.auth.token;
 
       if (!token || typeof token !== "string") {
-        return next(new Error("Unauthorized"));
+        throw new Error("Unauthorized");
       }
 
       const payload = verifyToken(token);
 
       if (!payload?.id) {
-        return next(new Error("Unauthorized"));
+        throw new Error("Unauthorized");
       }
 
       socket.data.userId = payload.id;

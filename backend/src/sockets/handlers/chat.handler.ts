@@ -1,6 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { SocketData } from "../../types/socket.types";
 import * as ChatService from "../../modules/chat/chat.service";
+import * as MessageService from "../../modules/chat/message.service";
 import {
   joinChatSchema,
   leaveChatSchema,
@@ -9,36 +10,91 @@ import { ackSuccess, ackError } from "../utils/ack";
 import type { Ack } from "../utils/ack";
 
 export const registerChatHendlers = (
-  _io: Server<any, any, any, SocketData>,
+  io: Server<any, any, any, SocketData>,
   socket: Socket<any, any, any, SocketData>,
 ) => {
-  socket.on("chat:join", async (payload: unknown, ack?: Ack) => {
+  socket.on("chat:list", async () => {
     try {
-      const dto = joinChatSchema.parse(payload);
       const userId = socket.data.userId;
+      const chats = await ChatService.getUserChats(userId);
+      console.log("chats", chats);
 
-      await ChatService.ensureParticipant(dto.chatId, userId);
-
-      socket.join(`chat: ${dto.chatId}`);
-
-      ackSuccess(ack, { chatId: dto.chatId });
+      socket.emit("chat:list:success", { chats });
     } catch (error) {
-      ackError(ack, error, "Failed to join chat");
+      socket.emit("chat:error", {
+        message:
+          error instanceof Error ? error.message : "Failed to load chats",
+      });
     }
-  });
 
-  socket.on("chat:leave", async (payload: unknown, ack?: Ack) => {
-    try {
-      const dto = leaveChatSchema.parse(payload);
-      const userId = socket.data.userId;
+    socket.on("chat:joinAll", async () => {
+      try {
+        const userId = socket.data.userId;
+        const chats = await ChatService.getUserChats(userId);
 
-      await ChatService.ensureParticipant(dto.chatId, userId);
+        for (const chat of chats) {
+          socket.join(`chat:${chat.id}`);
+        }
 
-      socket.leave(`chat: ${dto.chatId}`);
+        socket.emit("chat:joinAll:success", {
+          chatIds: chats.map((chat) => chat.id),
+        });
+      } catch (error) {
+        socket.emit("chat:error", {
+          message:
+            error instanceof Error ? error.message : "Failed to join chats",
+        });
+      }
+    });
 
-      ackSuccess(ack, { chatId: dto.chatId });
-    } catch (error) {
-      ackError(ack, error, "Failed to leave chat");
-    }
+    socket.on("chat:open", async (payload: { chatId: number }) => {
+      try {
+        const userId = socket.data.userId;
+        const { chatId } = payload;
+
+        await ChatService.ensureParticipant(chatId, userId);
+        socket.join(`chat:${chatId}`);
+
+        const messages = await ChatService.getChatMessages(chatId, userId);
+
+        socket.emit("chat:open:success", {
+          chatId,
+          messages,
+        });
+      } catch (error) {
+        socket.emit("chat:error", {
+          message:
+            error instanceof Error ? error.message : "Failed to open chat",
+        });
+      }
+    });
+
+    socket.on(
+      "chat:send",
+      async (payload: { chatId: number; text: string }) => {
+        try {
+          const userId = socket.data.userId;
+
+          const result = await MessageService.sendMessage(userId, payload);
+
+          io.to(`chat:${payload.chatId}`).emit(
+            "chat:message:new",
+            result.userMessage,
+          );
+
+          if (result.botMessage) {
+            io.to(`chat:${payload.chatId}`).emit(
+              "chat:message:new",
+              result.botMessage,
+            );
+          }
+        } catch (error) {
+          socket.emit("chat:error", {
+            message:
+              error instanceof Error ? error.message : "Failed to send message",
+          });
+        }
+      },
+    );
   });
 };

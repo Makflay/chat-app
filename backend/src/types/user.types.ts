@@ -1,9 +1,9 @@
 import { Role } from "../generated/prisma";
 
-export interface IUser {
+export interface User {
   id: number;
-  name: string;
+  username: string;
+  email: string;
   role: Role;
-  // email: string;
-  // password: string;
+  isBot: boolean;
 }
