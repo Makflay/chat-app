@@ -1,10 +1,17 @@
-import type { User } from "./user-types";
+//import type { User } from "./user-types";
 
+export interface MessageSender {
+  id: number;
+  username: string;
+  email?: string;
+  isBot?: boolean;
+}
 export interface Message {
   id: number;
-  content: string;
-  senderId: number;
   chatId: number;
+  senderId: number;
+  content: string | null;
   createdAt: string;
-  user: User;
+  updatedAt: string;
+  sender: MessageSender;
 }
