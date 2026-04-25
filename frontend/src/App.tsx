@@ -23,7 +23,6 @@ function App() {
 
       await fetchMe();
     };
-    console.log("startedRef.current", startedRef.current);
     if (startedRef.current) return;
     startedRef.current = true;
 
