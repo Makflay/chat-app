@@ -1,8 +1,8 @@
 import { prisma } from "../../config/db";
-import { attachChatBotForUser } from "./bot.chat.service";
-import { attachUserToGroupChat } from "./group.chat.service";
-import { ensureChatBot } from "./bot.chat.service";
-import { ensureGroupChat } from "./group.chat.service";
+import { attachChatBotForUser } from "./bot/bot.chat.service";
+import { attachUserToGroupChat } from "./chat.group.service";
+import { ensureChatBot } from "./bot/bot.chat.service";
+import { ensureGroupChat } from "./chat.group.service";
 
 export const attachDefaultChatForUser = async (
   userId: number,

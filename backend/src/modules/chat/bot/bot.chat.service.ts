@@ -1,8 +1,8 @@
-import { prisma } from "../../config/db";
-import { Prisma } from "../../generated/prisma";
-import { ChatType, Role } from "../../generated/prisma";
-import type { User } from "../../types/user.types";
-import "../../config/env";
+import { prisma } from "../../../config/db";
+import { Prisma } from "../../../generated/prisma";
+import { ChatType, Role } from "../../../generated/prisma";
+import type { User } from "../../../types/user.types";
+import "../../../config/env";
 
 export const ensureChatBot = async (): Promise<User> => {
   try {

@@ -1,8 +1,8 @@
-import { prisma } from "../../config/db";
-import { ChatType } from "../../generated/prisma";
-import * as ChatService from "./chat.service";
+import { prisma } from "../../../config/db";
+import { ChatType } from "../../../generated/prisma";
+import * as ChatService from "../chat.service";
 import { SendMessageDto } from "./message.validation";
-import { generateBotReply } from "./bot.reply.service";
+import { generateBotReply } from "../bot/bot.reply.service";
 
 export const sendMessage = async (userId: number, dto: SendMessageDto) => {
   await ChatService.ensureParticipant(dto.chatId, userId);
