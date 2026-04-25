@@ -16,24 +16,16 @@ export const protect = (
     token = req.headers.authorization.split(" ")[1];
   }
 
-  console.log("req.headers.authorization", req.headers.authorization);
-  console.log("token", token);
-
   if (!token) {
-    console.log("NO TOKEN BRANCH");
     errorResponse(res, "Not autorized", 401);
     return;
   }
 
   try {
-    console.log("BEFORE VERIFY");
     const decoded = verifyToken(token);
-    console.log("DECODED", decoded);
     req.user = decoded;
-    console.log("BEFORE NEXT");
     next();
   } catch (error) {
-    console.log("VERIFY ERROR", error);
     if (error instanceof Error) {
       errorResponse(res, error.message, 401);
       return;

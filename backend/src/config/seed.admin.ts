@@ -2,8 +2,8 @@ import { Prisma, Role } from "../generated/prisma";
 import { prisma } from "./db";
 import { hashPassword } from "../utils/hash.password";
 import "./env";
-import { attachUserToGroupChat } from "../modules/chat/group.chat.service";
-import { attachChatBotForUser } from "../modules/chat/bot.chat.service";
+import { attachUserToGroupChat } from "../modules/chat/chat.group.service";
+import { attachChatBotForUser } from "../modules/chat/bot/bot.chat.service";
 
 export const seedAdmin = async (): Promise<void> => {
   try {

@@ -5,8 +5,8 @@ import { generateToken } from "../../utils/jwt";
 import "../../config/env";
 import { RegisterUser, LoginUser } from "../../types/auth.types";
 import { User } from "../../types/user.types";
-import { attachChatBotForUser } from "../chat/bot.chat.service";
-import { attachUserToGroupChat } from "../chat/group.chat.service";
+import { attachChatBotForUser } from "../chat/bot/bot.chat.service";
+import { attachUserToGroupChat } from "../chat/chat.group.service";
 
 export const registerUser = async (
   data: RegisterUser,
