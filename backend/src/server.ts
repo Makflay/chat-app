@@ -4,8 +4,8 @@ import "./config/env";
 import { initSocket } from "./sockets/index";
 import { seedAdmin } from "./config/seed.admin";
 import { connectDB } from "./config/db";
-import { ensureChatBot } from "./modules/chat/bot.chat.service";
-import { ensureGroupChat } from "./modules/chat/group.chat.service";
+import { ensureChatBot } from "./modules/chat/bot/bot.chat.service";
+import { ensureGroupChat } from "./modules/chat/chat.group.service";
 
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
