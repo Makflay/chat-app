@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { SocketData } from "../../types/socket.types";
-import { sendMessageSchema } from "../../modules/chat/message.validation";
-import { sendMessage } from "../../modules/chat/message.service";
+import { sendMessageSchema } from "../../modules/chat/message/message.validation";
+import { sendMessage } from "../../modules/chat/message/message.service";
 import * as ChatService from "../../modules/chat/chat.service";
 import { ackSuccess, ackError } from "../utils/ack";
 import type { Ack } from "../utils/ack";

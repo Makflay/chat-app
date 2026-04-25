@@ -1,11 +1,11 @@
 import { Server, Socket } from "socket.io";
 import { SocketData } from "../../types/socket.types";
 import * as ChatService from "../../modules/chat/chat.service";
-import * as MessageService from "../../modules/chat/message.service";
+import * as MessageService from "../../modules/chat/message/message.service";
 import {
   joinChatSchema,
   leaveChatSchema,
-} from "../../modules/chat/message.validation";
+} from "../../modules/chat/message/message.validation";
 import { ackSuccess, ackError } from "../utils/ack";
 import type { Ack } from "../utils/ack";
 
