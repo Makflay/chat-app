@@ -1,8 +1,17 @@
 import { create } from "zustand";
 import type { Message } from "../types/message-types";
 import type { Chat } from "../types/chat-types";
+import type { User } from "../types/user-types";
 import { useAuthStore } from "./auth-store";
 import { connectSocket, disconnectSocket, getSocket } from "../socket/socket";
+
+type AckResponse<T = unknown> =
+  | { ok: true; data?: T }
+  | { ok: false; message: string };
+
+interface UserAckPayload {
+  user: User;
+}
 
 interface ChatState {
   chats: Chat[];
@@ -12,6 +21,7 @@ interface ChatState {
   isConnected: boolean;
   isLoadingChats: boolean;
   isLoadingMessages: boolean;
+  mutingUserIds: number[];
   error: string | null;
 
   connect: () => void;
@@ -22,7 +32,10 @@ interface ChatState {
   joinAllChats: () => void;
   openChat: (chatId: number) => void;
   sendMessage: (text: string) => void;
+  muteUser: (userId: number) => Promise<void>;
+  unmuteUser: (userId: number) => Promise<void>;
   addMessage: (message: Message) => void;
+  updateUserMuteState: (user: User) => void;
   setActiveChatId: (chatId: number | null) => void;
   //clearMessages: () => void;
 }
@@ -35,6 +48,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isConnected: false,
   isLoadingChats: false,
   isLoadingMessages: false,
+  mutingUserIds: [],
   error: null,
 
   connect: () => {
@@ -49,6 +63,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     socket.off("chat:open:success");
     socket.off("chat:message:new");
     socket.off("chat:error");
+    socket.off("user:muted");
+    socket.off("user:unmuted");
 
     socket.on("connect", () => {
       set({ isConnected: true, error: null });
@@ -96,6 +112,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
         isLoadingMessages: false,
       });
     });
+
+    socket.on("user:muted", ({ user }: UserAckPayload) => {
+      get().updateUserMuteState(user);
+    });
+
+    socket.on("user:unmuted", ({ user }: UserAckPayload) => {
+      get().updateUserMuteState(user);
+    });
   },
 
   disconnect: () => {
@@ -108,6 +132,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       isConnected: false,
       isLoadingChats: false,
       isLoadingMessages: false,
+      mutingUserIds: [],
       error: null,
     });
   },
@@ -154,6 +179,70 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
   },
 
+  muteUser: (userId: number) =>
+    new Promise((resolve) => {
+      const socket = getSocket();
+      if (!socket) {
+        set({ error: "Socket is not connected" });
+        resolve();
+        return;
+      }
+
+      set((state) => ({
+        mutingUserIds: [...state.mutingUserIds, userId],
+        error: null,
+      }));
+
+      socket.emit(
+        "admin:user:mute",
+        { userId },
+        (response: AckResponse<UserAckPayload>) => {
+          if (response.ok && response.data?.user) {
+            get().updateUserMuteState(response.data.user);
+          } else if (!response.ok) {
+            set({ error: response.message });
+          }
+
+          set((state) => ({
+            mutingUserIds: state.mutingUserIds.filter((id) => id !== userId),
+          }));
+          resolve();
+        },
+      );
+    }),
+
+  unmuteUser: (userId: number) =>
+    new Promise((resolve) => {
+      const socket = getSocket();
+      if (!socket) {
+        set({ error: "Socket is not connected" });
+        resolve();
+        return;
+      }
+
+      set((state) => ({
+        mutingUserIds: [...state.mutingUserIds, userId],
+        error: null,
+      }));
+
+      socket.emit(
+        "admin:user:unmute",
+        { userId },
+        (response: AckResponse<UserAckPayload>) => {
+          if (response.ok && response.data?.user) {
+            get().updateUserMuteState(response.data.user);
+          } else if (!response.ok) {
+            set({ error: response.message });
+          }
+
+          set((state) => ({
+            mutingUserIds: state.mutingUserIds.filter((id) => id !== userId),
+          }));
+          resolve();
+        },
+      );
+    }),
+
   setActiveChatId: (chatId) => {
     set({ activeChatId: chatId });
   },
@@ -175,6 +264,56 @@ export const useChatStore = create<ChatState>((set, get) => ({
             }
           : chat,
       ),
+    }));
+  },
+
+  updateUserMuteState: (user) => {
+    const currentUser = useAuthStore.getState().user;
+
+    if (currentUser?.id === user.id) {
+      useAuthStore.setState({
+        user: {
+          ...currentUser,
+          isMuted: user.isMuted,
+        },
+      });
+    }
+
+    set((state) => ({
+      messagesByChatId: Object.fromEntries(
+        Object.entries(state.messagesByChatId).map(([chatId, messages]) => [
+          chatId,
+          messages.map((message) =>
+            message.sender.id === user.id
+              ? {
+                  ...message,
+                  sender: {
+                    ...message.sender,
+                    isMuted: user.isMuted,
+                  },
+                }
+              : message,
+          ),
+        ]),
+      ),
+      chats: state.chats.map((chat) => ({
+        ...chat,
+        participants: chat.participants.map((participant) =>
+          participant.id === user.id
+            ? { ...participant, isMuted: user.isMuted }
+            : participant,
+        ),
+        lastMessage:
+          chat.lastMessage?.sender.id === user.id
+            ? {
+                ...chat.lastMessage,
+                sender: {
+                  ...chat.lastMessage.sender,
+                  isMuted: user.isMuted,
+                },
+              }
+            : chat.lastMessage,
+      })),
     }));
   },
 }));

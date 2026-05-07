@@ -1,5 +1,5 @@
 import "../../../config/env";
-import { generateYandexReply } from "./yandex.ai.provider";
+import { generateYandexReply } from "./ai.yandex.provider";
 
 export type AiProvider = "yandex" | "openai" | "none";
 

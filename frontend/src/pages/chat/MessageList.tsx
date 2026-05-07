@@ -1,5 +1,15 @@
 import { useEffect, useRef } from "react";
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Chip,
+  IconButton,
+  Paper,
+  Stack,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import BlockIcon from "@mui/icons-material/Block";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import { useAuthStore } from "../../store/auth-store";
 import { useChatStore } from "../../store/chat-store";
 
@@ -9,6 +19,9 @@ const MessageList = () => {
   const activeChatId = useChatStore((store) => store.activeChatId);
   const messagesByChatId = useChatStore((store) => store.messagesByChatId);
   const isLoadingMessages = useChatStore((store) => store.isLoadingMessages);
+  const mutingUserIds = useChatStore((store) => store.mutingUserIds);
+  const muteUser = useChatStore((store) => store.muteUser);
+  const unmuteUser = useChatStore((store) => store.unmuteUser);
 
   const messages = activeChatId ? messagesByChatId[activeChatId] : undefined;
 
@@ -43,6 +56,17 @@ const MessageList = () => {
         <Stack spacing={1.5}>
           {messages.map((message) => {
             const isOwnMessage = message.sender.id === user?.id;
+            const canModerate =
+              user?.role === "ADMIN" &&
+              !isOwnMessage &&
+              !message.sender.isBot;
+            const isMuteActionPending = mutingUserIds.includes(
+              message.sender.id,
+            );
+            const muteTooltip = message.sender.isMuted
+              ? "Unmute user"
+              : "Mute user";
+
             return (
               <Box
                 key={message.id}
@@ -72,15 +96,51 @@ const MessageList = () => {
                       gap: 1,
                     }}
                   >
-                    {!isOwnMessage && (
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ flexShrink: 0 }}
-                      >
-                        {message.sender.username}
-                      </Typography>
-                    )}
+                    <Box display="flex" alignItems="center" gap={0.75}>
+                      {!isOwnMessage && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ flexShrink: 0 }}
+                        >
+                          {message.sender.username}
+                        </Typography>
+                      )}
+                      {message.sender.isMuted && (
+                        <Chip
+                          label="Muted"
+                          size="small"
+                          variant="outlined"
+                          sx={{ height: 20, fontSize: 11 }}
+                        />
+                      )}
+                      {canModerate && (
+                        <Tooltip title={muteTooltip}>
+                          <span>
+                            <IconButton
+                              size="small"
+                              disabled={isMuteActionPending}
+                              onClick={() => {
+                                if (message.sender.isMuted) {
+                                  void unmuteUser(message.sender.id);
+                                  return;
+                                }
+
+                                void muteUser(message.sender.id);
+                              }}
+                              aria-label={muteTooltip}
+                              sx={{ width: 24, height: 24 }}
+                            >
+                              {message.sender.isMuted ? (
+                                <VolumeUpIcon fontSize="inherit" />
+                              ) : (
+                                <BlockIcon fontSize="inherit" />
+                              )}
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      )}
+                    </Box>
                     <Typography variant="caption" color="text.secondary">
                       {new Date(message.createdAt).toLocaleTimeString([], {
                         hour: "2-digit",

@@ -32,6 +32,7 @@ export const registerUser = async (
       email: true,
       role: true,
       isBot: true,
+      isMuted: true,
     },
   });
   await attachChatBotForUser(user.id);
@@ -52,6 +53,7 @@ export const login = async (
       email: true,
       role: true,
       isBot: true,
+      isMuted: true,
       password: true,
     },
   });
@@ -78,6 +80,7 @@ export const login = async (
     email: secretUser.email,
     role: secretUser.role,
     isBot: secretUser.isBot,
+    isMuted: secretUser.isMuted,
   };
 
   return { user, token };
@@ -92,6 +95,7 @@ export const getCurrentUser = async (userId: number): Promise<User> => {
       email: true,
       role: true,
       isBot: true,
+      isMuted: true,
     },
   });
 

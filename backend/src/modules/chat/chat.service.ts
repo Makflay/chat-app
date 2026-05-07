@@ -1,9 +1,14 @@
 import { prisma } from "../../config/db";
+import type { Chat, UserChat, ChatMessage } from "../../types/chat.types";
 
-export const getChatById = async (chatId: number) => {
-  return prisma.chat.findUnique({
+export const getChatById = async (chatId: number): Promise<Chat | null> => {
+  const chat = await prisma.chat.findUnique({
     where: { id: chatId },
   });
+
+  if (!chat) return null;
+
+  return chat;
 };
 
 export const isParticipant = async (
@@ -45,7 +50,7 @@ export const getParticipantUserIds = async (
   return participants.map((p) => p.userId);
 };
 
-export const getUserChats = async (userId: number) => {
+export const getUserChats = async (userId: number): Promise<UserChat[]> => {
   const chats = await prisma.chat.findMany({
     where: {
       participants: {
@@ -62,6 +67,7 @@ export const getUserChats = async (userId: number) => {
               id: true,
               username: true,
               isBot: true,
+              isMuted: true,
             },
           },
         },
@@ -77,6 +83,7 @@ export const getUserChats = async (userId: number) => {
               id: true,
               username: true,
               isBot: true,
+              isMuted: true,
             },
           },
         },
@@ -87,18 +94,18 @@ export const getUserChats = async (userId: number) => {
     },
   });
 
-  console.log("getUserChats chats", chats);
-
-  return chats.map((chat) => ({
+  const userChats = chats.map((chat) => ({
     id: chat.id,
     type: chat.type,
     title: chat.title,
+    systemKey: chat.systemKey,
     isDefault: chat.isDefault,
     ownerUserId: chat.ownerUserId,
     participants: chat.participants.map((p) => ({
       id: p.user.id,
       username: p.user.username,
       isBot: p.user.isBot,
+      isMuted: p.user.isMuted,
     })),
     lastMessage: chat.messages[0]
       ? {
@@ -109,9 +116,13 @@ export const getUserChats = async (userId: number) => {
         }
       : null,
   }));
+  return userChats;
 };
 
-export const getChatMessages = async (chatId: number, userId: number) => {
+export const getChatMessages = async (
+  chatId: number,
+  userId: number,
+): Promise<ChatMessage[]> => {
   await ensureParticipant(chatId, userId);
 
   const messages = await prisma.message.findMany({
@@ -124,6 +135,7 @@ export const getChatMessages = async (chatId: number, userId: number) => {
           username: true,
           email: true,
           isBot: true,
+          isMuted: true,
         },
       },
     },

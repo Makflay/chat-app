@@ -5,6 +5,19 @@ import { SendMessageDto } from "./message.validation";
 import { generateBotReply } from "../bot/bot.reply.service";
 
 export const sendMessage = async (userId: number, dto: SendMessageDto) => {
+  const sender = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { isMuted: true },
+  });
+
+  if (!sender) {
+    throw new Error("User not found");
+  }
+
+  if (sender.isMuted) {
+    throw new Error("You are muted and cannot send messages");
+  }
+
   await ChatService.ensureParticipant(dto.chatId, userId);
 
   const result = await prisma.$transaction(async (tx) => {
@@ -33,6 +46,7 @@ export const sendMessage = async (userId: number, dto: SendMessageDto) => {
             username: true,
             email: true,
             isBot: true,
+            isMuted: true,
           },
         },
       },
@@ -72,6 +86,7 @@ export const sendMessage = async (userId: number, dto: SendMessageDto) => {
               username: true,
               email: true,
               isBot: true,
+              isMuted: true,
             },
           },
         },
