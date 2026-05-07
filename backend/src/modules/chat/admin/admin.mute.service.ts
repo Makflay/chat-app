@@ -8,6 +8,7 @@ const userSelect = {
   role: true,
   isBot: true,
   isMuted: true,
+  isKicked: true,
 };
 
 export const muteUser = async (userId: number): Promise<User> => {
@@ -22,6 +23,22 @@ export const unmuteUser = async (userId: number): Promise<User> => {
   return prisma.user.update({
     where: { id: userId },
     data: { isMuted: false },
+    select: userSelect,
+  });
+};
+
+export const kickUser = async (userId: number): Promise<User> => {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { isKicked: true },
+    select: userSelect,
+  });
+};
+
+export const unkickUser = async (userId: number): Promise<User> => {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { isKicked: false },
     select: userSelect,
   });
 };

@@ -22,6 +22,7 @@ interface ChatState {
   isLoadingChats: boolean;
   isLoadingMessages: boolean;
   mutingUserIds: number[];
+  kickingUserIds: number[];
   error: string | null;
 
   connect: () => void;
@@ -34,8 +35,11 @@ interface ChatState {
   sendMessage: (text: string) => void;
   muteUser: (userId: number) => Promise<void>;
   unmuteUser: (userId: number) => Promise<void>;
+  kickUser: (userId: number) => Promise<void>;
+  unkickUser: (userId: number) => Promise<void>;
   addMessage: (message: Message) => void;
   updateUserMuteState: (user: User) => void;
+  updateUserKickState: (user: User) => void;
   setActiveChatId: (chatId: number | null) => void;
   //clearMessages: () => void;
 }
@@ -49,6 +53,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isLoadingChats: false,
   isLoadingMessages: false,
   mutingUserIds: [],
+  kickingUserIds: [],
   error: null,
 
   connect: () => {
@@ -65,6 +70,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     socket.off("chat:error");
     socket.off("user:muted");
     socket.off("user:unmuted");
+    socket.off("user:kicked");
+    socket.off("user:unkicked");
 
     socket.on("connect", () => {
       set({ isConnected: true, error: null });
@@ -120,6 +127,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
     socket.on("user:unmuted", ({ user }: UserAckPayload) => {
       get().updateUserMuteState(user);
     });
+
+    socket.on("user:kicked", ({ user }: UserAckPayload) => {
+      get().updateUserKickState(user);
+
+      if (useAuthStore.getState().user?.id === user.id) {
+        useAuthStore.getState().logout();
+        get().disconnect();
+      }
+    });
+
+    socket.on("user:unkicked", ({ user }: UserAckPayload) => {
+      get().updateUserKickState(user);
+    });
   },
 
   disconnect: () => {
@@ -133,6 +153,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       isLoadingChats: false,
       isLoadingMessages: false,
       mutingUserIds: [],
+      kickingUserIds: [],
       error: null,
     });
   },
@@ -243,6 +264,70 @@ export const useChatStore = create<ChatState>((set, get) => ({
       );
     }),
 
+  kickUser: (userId: number) =>
+    new Promise((resolve) => {
+      const socket = getSocket();
+      if (!socket) {
+        set({ error: "Socket is not connected" });
+        resolve();
+        return;
+      }
+
+      set((state) => ({
+        kickingUserIds: [...state.kickingUserIds, userId],
+        error: null,
+      }));
+
+      socket.emit(
+        "admin:user:kick",
+        { userId },
+        (response: AckResponse<UserAckPayload>) => {
+          if (response.ok && response.data?.user) {
+            get().updateUserKickState(response.data.user);
+          } else if (!response.ok) {
+            set({ error: response.message });
+          }
+
+          set((state) => ({
+            kickingUserIds: state.kickingUserIds.filter((id) => id !== userId),
+          }));
+          resolve();
+        },
+      );
+    }),
+
+  unkickUser: (userId: number) =>
+    new Promise((resolve) => {
+      const socket = getSocket();
+      if (!socket) {
+        set({ error: "Socket is not connected" });
+        resolve();
+        return;
+      }
+
+      set((state) => ({
+        kickingUserIds: [...state.kickingUserIds, userId],
+        error: null,
+      }));
+
+      socket.emit(
+        "admin:user:unkick",
+        { userId },
+        (response: AckResponse<UserAckPayload>) => {
+          if (response.ok && response.data?.user) {
+            get().updateUserKickState(response.data.user);
+          } else if (!response.ok) {
+            set({ error: response.message });
+          }
+
+          set((state) => ({
+            kickingUserIds: state.kickingUserIds.filter((id) => id !== userId),
+          }));
+          resolve();
+        },
+      );
+    }),
+
   setActiveChatId: (chatId) => {
     set({ activeChatId: chatId });
   },
@@ -310,6 +395,56 @@ export const useChatStore = create<ChatState>((set, get) => ({
                 sender: {
                   ...chat.lastMessage.sender,
                   isMuted: user.isMuted,
+                },
+              }
+            : chat.lastMessage,
+      })),
+    }));
+  },
+
+  updateUserKickState: (user) => {
+    const currentUser = useAuthStore.getState().user;
+
+    if (currentUser?.id === user.id) {
+      useAuthStore.setState({
+        user: {
+          ...currentUser,
+          isKicked: user.isKicked,
+        },
+      });
+    }
+
+    set((state) => ({
+      messagesByChatId: Object.fromEntries(
+        Object.entries(state.messagesByChatId).map(([chatId, messages]) => [
+          chatId,
+          messages.map((message) =>
+            message.sender.id === user.id
+              ? {
+                  ...message,
+                  sender: {
+                    ...message.sender,
+                    isKicked: user.isKicked,
+                  },
+                }
+              : message,
+          ),
+        ]),
+      ),
+      chats: state.chats.map((chat) => ({
+        ...chat,
+        participants: chat.participants.map((participant) =>
+          participant.id === user.id
+            ? { ...participant, isKicked: user.isKicked }
+            : participant,
+        ),
+        lastMessage:
+          chat.lastMessage?.sender.id === user.id
+            ? {
+                ...chat.lastMessage,
+                sender: {
+                  ...chat.lastMessage.sender,
+                  isKicked: user.isKicked,
                 },
               }
             : chat.lastMessage,

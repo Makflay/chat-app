@@ -7,4 +7,5 @@ export interface User {
   role: Role;
   isBot: boolean;
   isMuted: boolean;
+  isKicked: boolean;
 }

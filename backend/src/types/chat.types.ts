@@ -15,6 +15,7 @@ export interface MessageSender {
   email: string;
   isBot: boolean;
   isMuted: boolean;
+  isKicked: boolean;
 }
 
 export interface ChatMessage {
@@ -32,6 +33,7 @@ export interface chatParticipantPreview {
   username: string;
   isBot: boolean;
   isMuted: boolean;
+  isKicked: boolean;
 }
 
 export interface LastMessagePreview {
@@ -43,6 +45,7 @@ export interface LastMessagePreview {
     username: string;
     isBot: boolean;
     isMuted: boolean;
+    isKicked: boolean;
   };
 }
 

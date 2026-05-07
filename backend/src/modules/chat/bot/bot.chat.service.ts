@@ -20,7 +20,7 @@ export const ensureChatBot = async (): Promise<User> => {
 
     if (existingBot) {
       console.log("Bot already exist");
-      return existingBot;
+      return { ...existingBot, isKicked: false };
     }
 
     const newBot: Prisma.UserCreateInput = {
@@ -31,7 +31,7 @@ export const ensureChatBot = async (): Promise<User> => {
       isBot: true,
     };
     const createdBot = await prisma.user.create({ data: newBot });
-    return createdBot;
+    return { ...createdBot, isKicked: false };
   } catch (error) {
     if (error instanceof Error) {
       throw new Error(`Creating chat bot error: ${error}`);

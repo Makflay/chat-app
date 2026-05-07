@@ -5,4 +5,5 @@ export interface User {
   role: "USER" | "ADMIN";
   isBot?: boolean;
   isMuted?: boolean;
+  isKicked?: boolean;
 }

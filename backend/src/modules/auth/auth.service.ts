@@ -33,6 +33,7 @@ export const registerUser = async (
       role: true,
       isBot: true,
       isMuted: true,
+      isKicked: true,
     },
   });
   await attachChatBotForUser(user.id);
@@ -54,6 +55,7 @@ export const login = async (
       role: true,
       isBot: true,
       isMuted: true,
+      isKicked: true,
       password: true,
     },
   });
@@ -63,6 +65,10 @@ export const login = async (
 
   if (secretUser.isBot) {
     throw new Error("Invalid credentials");
+  }
+
+  if (secretUser.isKicked) {
+    throw new Error("User is kicked from chat");
   }
 
   const isPassEquals = await comparePassword(
@@ -81,6 +87,7 @@ export const login = async (
     role: secretUser.role,
     isBot: secretUser.isBot,
     isMuted: secretUser.isMuted,
+    isKicked: secretUser.isKicked,
   };
 
   return { user, token };
@@ -96,11 +103,16 @@ export const getCurrentUser = async (userId: number): Promise<User> => {
       role: true,
       isBot: true,
       isMuted: true,
+      isKicked: true,
     },
   });
 
   if (!user) {
     throw new Error("User not found");
+  }
+
+  if (user.isKicked) {
+    throw new Error("User is kicked from chat");
   }
 
   return user;

@@ -9,6 +9,8 @@ import {
   Typography,
 } from "@mui/material";
 import BlockIcon from "@mui/icons-material/Block";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import PersonOffIcon from "@mui/icons-material/PersonOff";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import { useAuthStore } from "../../store/auth-store";
 import { useChatStore } from "../../store/chat-store";
@@ -20,8 +22,11 @@ const MessageList = () => {
   const messagesByChatId = useChatStore((store) => store.messagesByChatId);
   const isLoadingMessages = useChatStore((store) => store.isLoadingMessages);
   const mutingUserIds = useChatStore((store) => store.mutingUserIds);
+  const kickingUserIds = useChatStore((store) => store.kickingUserIds);
   const muteUser = useChatStore((store) => store.muteUser);
   const unmuteUser = useChatStore((store) => store.unmuteUser);
+  const kickUser = useChatStore((store) => store.kickUser);
+  const unkickUser = useChatStore((store) => store.unkickUser);
 
   const messages = activeChatId ? messagesByChatId[activeChatId] : undefined;
 
@@ -63,9 +68,15 @@ const MessageList = () => {
             const isMuteActionPending = mutingUserIds.includes(
               message.sender.id,
             );
+            const isKickActionPending = kickingUserIds.includes(
+              message.sender.id,
+            );
             const muteTooltip = message.sender.isMuted
               ? "Unmute user"
               : "Mute user";
+            const kickTooltip = message.sender.isKicked
+              ? "Unkick user"
+              : "Kick user";
 
             return (
               <Box
@@ -114,31 +125,65 @@ const MessageList = () => {
                           sx={{ height: 20, fontSize: 11 }}
                         />
                       )}
+                      {message.sender.isKicked && (
+                        <Chip
+                          label="Kicked"
+                          size="small"
+                          variant="outlined"
+                          sx={{ height: 20, fontSize: 11 }}
+                        />
+                      )}
                       {canModerate && (
-                        <Tooltip title={muteTooltip}>
-                          <span>
-                            <IconButton
-                              size="small"
-                              disabled={isMuteActionPending}
-                              onClick={() => {
-                                if (message.sender.isMuted) {
-                                  void unmuteUser(message.sender.id);
-                                  return;
-                                }
+                        <>
+                          <Tooltip title={muteTooltip}>
+                            <span>
+                              <IconButton
+                                size="small"
+                                disabled={isMuteActionPending}
+                                onClick={() => {
+                                  if (message.sender.isMuted) {
+                                    void unmuteUser(message.sender.id);
+                                    return;
+                                  }
 
-                                void muteUser(message.sender.id);
-                              }}
-                              aria-label={muteTooltip}
-                              sx={{ width: 24, height: 24 }}
-                            >
-                              {message.sender.isMuted ? (
-                                <VolumeUpIcon fontSize="inherit" />
-                              ) : (
-                                <BlockIcon fontSize="inherit" />
-                              )}
-                            </IconButton>
-                          </span>
-                        </Tooltip>
+                                  void muteUser(message.sender.id);
+                                }}
+                                aria-label={muteTooltip}
+                                sx={{ width: 24, height: 24 }}
+                              >
+                                {message.sender.isMuted ? (
+                                  <VolumeUpIcon fontSize="inherit" />
+                                ) : (
+                                  <BlockIcon fontSize="inherit" />
+                                )}
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                          <Tooltip title={kickTooltip}>
+                            <span>
+                              <IconButton
+                                size="small"
+                                disabled={isKickActionPending}
+                                onClick={() => {
+                                  if (message.sender.isKicked) {
+                                    void unkickUser(message.sender.id);
+                                    return;
+                                  }
+
+                                  void kickUser(message.sender.id);
+                                }}
+                                aria-label={kickTooltip}
+                                sx={{ width: 24, height: 24 }}
+                              >
+                                {message.sender.isKicked ? (
+                                  <PersonAddIcon fontSize="inherit" />
+                                ) : (
+                                  <PersonOffIcon fontSize="inherit" />
+                                )}
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </>
                       )}
                     </Box>
                     <Typography variant="caption" color="text.secondary">

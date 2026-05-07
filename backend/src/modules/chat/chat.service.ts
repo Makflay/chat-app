@@ -68,6 +68,7 @@ export const getUserChats = async (userId: number): Promise<UserChat[]> => {
               username: true,
               isBot: true,
               isMuted: true,
+              isKicked: true,
             },
           },
         },
@@ -84,6 +85,7 @@ export const getUserChats = async (userId: number): Promise<UserChat[]> => {
               username: true,
               isBot: true,
               isMuted: true,
+              isKicked: true,
             },
           },
         },
@@ -106,6 +108,7 @@ export const getUserChats = async (userId: number): Promise<UserChat[]> => {
       username: p.user.username,
       isBot: p.user.isBot,
       isMuted: p.user.isMuted,
+      isKicked: p.user.isKicked,
     })),
     lastMessage: chat.messages[0]
       ? {
@@ -136,6 +139,7 @@ export const getChatMessages = async (
           email: true,
           isBot: true,
           isMuted: true,
+          isKicked: true,
         },
       },
     },

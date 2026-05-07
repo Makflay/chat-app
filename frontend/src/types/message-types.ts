@@ -6,6 +6,7 @@ export interface MessageSender {
   email?: string;
   isBot?: boolean;
   isMuted?: boolean;
+  isKicked?: boolean;
 }
 export interface Message {
   id: number;

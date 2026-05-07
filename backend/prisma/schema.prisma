@@ -41,6 +41,7 @@ model User {
   isBot     Boolean @default(false)
 
   isMuted   Boolean @default(false)
+  isKicked  Boolean @default(false)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
