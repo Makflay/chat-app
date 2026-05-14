@@ -22,7 +22,7 @@ export const registerSocketMiddleware = (
 
       const user = await prisma.user.findUnique({
         where: { id: payload.id },
-        select: { id: true, role: true, isKicked: true },
+        select: { id: true, username: true, role: true, isKicked: true },
       });
 
       if (!user || user.isKicked) {
@@ -30,6 +30,7 @@ export const registerSocketMiddleware = (
       }
 
       socket.data.userId = user.id;
+      socket.data.username = user.username;
       socket.data.role = user.role;
       next();
     } catch (error) {

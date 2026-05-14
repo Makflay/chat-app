@@ -4,6 +4,7 @@ import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageList from "./MessageList";
 import ChatList from "./ChatList";
+import OnlineUsersList from "./OnlineUsersList";
 import { useInitChats } from "./hooks/useInitChats";
 
 const ChatPage = () => {
@@ -16,7 +17,10 @@ const ChatPage = () => {
       <Container maxWidth="xl" sx={{ py: 3 }}>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, md: 4, lg: 3 }}>
-            <ChatList />
+            <Box display="flex" flexDirection="column" gap={2}>
+              <ChatList />
+              <OnlineUsersList />
+            </Box>
           </Grid>
 
           <Grid size={{ xs: 12, md: 8, lg: 9 }}>

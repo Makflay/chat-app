@@ -13,11 +13,24 @@ interface UserAckPayload {
   user: User;
 }
 
+interface OnlineUser {
+  id: number;
+  username: string;
+  role: "USER" | "ADMIN";
+}
+
+interface PresenceUpdatePayload {
+  onlineUsers: OnlineUser[];
+  onlineUserIds: number[];
+}
+
 interface ChatState {
   chats: Chat[];
   activeChatId: number | null;
   messagesByChatId: Record<number, Message[]>;
   joinedChatIds: number[];
+  onlineUsers: OnlineUser[];
+  onlineUserIds: number[];
   isConnected: boolean;
   isLoadingChats: boolean;
   isLoadingMessages: boolean;
@@ -49,6 +62,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   activeChatId: null,
   messagesByChatId: {},
   joinedChatIds: [],
+  onlineUsers: [],
+  onlineUserIds: [],
   isConnected: false,
   isLoadingChats: false,
   isLoadingMessages: false,
@@ -68,6 +83,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     socket.off("chat:open:success");
     socket.off("chat:message:new");
     socket.off("chat:error");
+    socket.off("presence:update");
     socket.off("user:muted");
     socket.off("user:unmuted");
     socket.off("user:kicked");
@@ -78,7 +94,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
 
     socket.on("disconnect", () => {
-      set({ isConnected: false });
+      set({ isConnected: false, onlineUsers: [], onlineUserIds: [] });
     });
 
     socket.on("chat:list:success", ({ chats }: { chats: Chat[] }) => {
@@ -120,6 +136,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
       });
     });
 
+    socket.on(
+      "presence:update",
+      ({ onlineUsers, onlineUserIds }: PresenceUpdatePayload) => {
+        set({ onlineUsers, onlineUserIds });
+      },
+    );
+
     socket.on("user:muted", ({ user }: UserAckPayload) => {
       get().updateUserMuteState(user);
     });
@@ -149,6 +172,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       activeChatId: null,
       messagesByChatId: {},
       joinedChatIds: [],
+      onlineUsers: [],
+      onlineUserIds: [],
       isConnected: false,
       isLoadingChats: false,
       isLoadingMessages: false,
