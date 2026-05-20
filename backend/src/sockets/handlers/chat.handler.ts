@@ -5,6 +5,7 @@ import * as MessageService from "../../modules/chat/message/message.service";
 import {
   joinChatSchema,
   leaveChatSchema,
+  sendMessageSchema,
 } from "../../modules/chat/message/message.validation";
 import { ackSuccess, ackError } from "../utils/ack";
 import type { Ack } from "../utils/ack";
@@ -71,19 +72,20 @@ export const registerChatHendlers = (
 
     socket.on(
       "chat:send",
-      async (payload: { chatId: number; text: string }) => {
+      async (payload: unknown) => {
         try {
+          const dto = sendMessageSchema.parse(payload);
           const userId = socket.data.userId;
 
-          const result = await MessageService.sendMessage(userId, payload);
+          const result = await MessageService.sendMessage(userId, dto);
 
-          io.to(`chat:${payload.chatId}`).emit(
+          io.to(`chat:${dto.chatId}`).emit(
             "chat:message:new",
             result.userMessage,
           );
 
           if (result.botMessage) {
-            io.to(`chat:${payload.chatId}`).emit(
+            io.to(`chat:${dto.chatId}`).emit(
               "chat:message:new",
               result.botMessage,
             );

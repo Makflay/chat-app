@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button, Paper, Stack, TextField } from "@mui/material";
 import { useAuthStore } from "../../store/auth-store";
 import { useChatStore } from "../../store/chat-store";
+import { MESSAGE_MAX_LENGTH } from "../../constants/chat";
 
 const MessageInput = () => {
   const [content, setContent] = useState("");
@@ -9,9 +10,11 @@ const MessageInput = () => {
   const sendMessage = useChatStore((state) => state.sendMessage);
   const activeChatId = useChatStore((state) => state.activeChatId);
   const isDisabled = !activeChatId || Boolean(user?.isMuted);
+  const isMessageTooLong = content.length > MESSAGE_MAX_LENGTH;
+  const isSendDisabled = isDisabled || !content.trim() || isMessageTooLong;
 
   const onSend = () => {
-    if (isDisabled || !content.trim()) return;
+    if (isSendDisabled) return;
     sendMessage(content);
     setContent("");
   };
@@ -25,6 +28,12 @@ const MessageInput = () => {
           value={content}
           disabled={isDisabled}
           onChange={(e) => setContent(e.target.value)}
+          error={isMessageTooLong}
+          helperText={
+            isMessageTooLong
+              ? `Message must be ${MESSAGE_MAX_LENGTH} characters or less`
+              : `${content.length}/${MESSAGE_MAX_LENGTH}`
+          }
           placeholder={
             user?.isMuted
               ? "You are muted"
@@ -38,7 +47,7 @@ const MessageInput = () => {
             }
           }}
         />
-        <Button variant="contained" onClick={onSend} disabled={isDisabled}>
+        <Button variant="contained" onClick={onSend} disabled={isSendDisabled}>
           Send
         </Button>
       </Stack>

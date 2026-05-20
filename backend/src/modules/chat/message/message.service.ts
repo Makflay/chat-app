@@ -1,10 +1,11 @@
 import { prisma } from "../../../config/db";
 import { ChatType } from "../../../generated/prisma";
 import * as ChatService from "../chat.service";
-import { SendMessageDto } from "./message.validation";
+import { SendMessageDto, sendMessageSchema } from "./message.validation";
 import { generateBotReply } from "../bot/bot.reply.service";
 
 export const sendMessage = async (userId: number, dto: SendMessageDto) => {
+  const validatedDto = sendMessageSchema.parse(dto);
   const sender = await prisma.user.findUnique({
     where: { id: userId },
     select: { isMuted: true },
@@ -18,11 +19,11 @@ export const sendMessage = async (userId: number, dto: SendMessageDto) => {
     throw new Error("You are muted and cannot send messages");
   }
 
-  await ChatService.ensureParticipant(dto.chatId, userId);
+  await ChatService.ensureParticipant(validatedDto.chatId, userId);
 
   const result = await prisma.$transaction(async (tx) => {
     const chat = await tx.chat.findUnique({
-      where: { id: dto.chatId },
+      where: { id: validatedDto.chatId },
       select: {
         id: true,
         type: true,
@@ -35,9 +36,9 @@ export const sendMessage = async (userId: number, dto: SendMessageDto) => {
 
     const userMessage = await tx.message.create({
       data: {
-        chatId: dto.chatId,
+        chatId: validatedDto.chatId,
         senderId: userId,
-        content: dto.text,
+        content: validatedDto.text,
       },
       include: {
         sender: {
@@ -54,7 +55,7 @@ export const sendMessage = async (userId: number, dto: SendMessageDto) => {
     });
 
     await tx.chat.update({
-      where: { id: dto.chatId },
+      where: { id: validatedDto.chatId },
       data: { updatedAt: new Date() },
     });
 
@@ -73,10 +74,10 @@ export const sendMessage = async (userId: number, dto: SendMessageDto) => {
     if (botUser) {
       //if !ai ipi token
       //else
-      const botReply = await generateBotReply(dto.text);
+      const botReply = await generateBotReply(validatedDto.text);
       botMessage = await prisma.message.create({
         data: {
-          chatId: dto.chatId,
+          chatId: validatedDto.chatId,
           senderId: botUser.id,
           content: botReply,
         },
@@ -95,7 +96,7 @@ export const sendMessage = async (userId: number, dto: SendMessageDto) => {
       });
 
       await prisma.chat.update({
-        where: { id: dto.chatId },
+        where: { id: validatedDto.chatId },
         data: { updatedAt: new Date() },
       });
     }

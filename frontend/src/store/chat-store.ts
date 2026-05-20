@@ -4,6 +4,7 @@ import type { Chat } from "../types/chat-types";
 import type { User } from "../types/user-types";
 import { useAuthStore } from "./auth-store";
 import { connectSocket, disconnectSocket, getSocket } from "../socket/socket";
+import { MESSAGE_MAX_LENGTH } from "../constants/chat";
 
 type AckResponse<T = unknown> =
   | { ok: true; data?: T }
@@ -217,7 +218,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
     const socket = getSocket();
     const { activeChatId } = get();
 
-    if (!socket || !activeChatId || !text.trim()) return;
+    if (
+      !socket ||
+      !activeChatId ||
+      !text.trim() ||
+      text.length > MESSAGE_MAX_LENGTH
+    ) {
+      return;
+    }
 
     socket.emit("chat:send", {
       chatId: activeChatId,

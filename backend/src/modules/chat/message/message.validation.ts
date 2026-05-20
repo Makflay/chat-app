@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const MESSAGE_MAX_LENGTH = 150;
+
 export const joinChatSchema = z.object({
   chatId: z.number().int().positive(),
 });
@@ -10,7 +12,7 @@ export const leaveChatSchema = z.object({
 
 export const sendMessageSchema = z.object({
   chatId: z.number().int().positive(),
-  text: z.string().trim().min(1).max(500),
+  text: z.string().trim().min(1).max(MESSAGE_MAX_LENGTH),
 });
 
 export type JoinChatDto = z.infer<typeof joinChatSchema>;

@@ -93,7 +93,7 @@ model ChatParticipant {
 
 model Message {
   id        Int     @id @default(autoincrement())
-  content  String?
+  content  String? @db.VarChar(200)
   senderId  Int
   chatId    Int
 
