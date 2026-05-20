@@ -1,11 +1,31 @@
 import { prisma } from "../../../config/db";
 import { ChatType } from "../../../generated/prisma";
 import * as ChatService from "../chat.service";
-import { SendMessageDto, sendMessageSchema } from "./message.validation";
+import {
+  MESSAGE_SEND_COOLDOWN_MS,
+  MessageCooldownError,
+  SendMessageDto,
+  sendMessageSchema,
+} from "./message.validation";
 import { generateBotReply } from "../bot/bot.reply.service";
+
+const messageCooldownUntilByUserChat = new Map<string, number>();
+
+const getMessageCooldownKey = (userId: number, chatId: number) =>
+  `${userId}:${chatId}`;
 
 export const sendMessage = async (userId: number, dto: SendMessageDto) => {
   const validatedDto = sendMessageSchema.parse(dto);
+  const cooldownKey = getMessageCooldownKey(userId, validatedDto.chatId);
+  const cooldownUntil = messageCooldownUntilByUserChat.get(cooldownKey) || 0;
+  const now = Date.now();
+
+  if (cooldownUntil > now) {
+    throw new MessageCooldownError(cooldownUntil - now);
+  }
+
+  messageCooldownUntilByUserChat.delete(cooldownKey);
+
   const sender = await prisma.user.findUnique({
     where: { id: userId },
     select: { isMuted: true },
@@ -62,6 +82,11 @@ export const sendMessage = async (userId: number, dto: SendMessageDto) => {
     return { chat, userMessage };
   });
 
+  messageCooldownUntilByUserChat.set(
+    cooldownKey,
+    Date.now() + MESSAGE_SEND_COOLDOWN_MS,
+  );
+
   let botMessage: null | Awaited<ReturnType<typeof prisma.message.create>> =
     null;
 
@@ -106,30 +131,4 @@ export const sendMessage = async (userId: number, dto: SendMessageDto) => {
     userMessage: result.userMessage,
     botMessage,
   };
-  // const message = await prisma.message.create({
-  //   data: {
-  //     chatId: dto.chatId,
-  //     senderId: userId,
-  //     content: dto.text,
-  //   },
-  //   include: {
-  //     sender: {
-  //       select: {
-  //         id: true,
-  //         email: true,
-  //         name: true,
-  //       },
-  //     },
-  //   },
-  // });
-  // await prisma.chat.update({
-  //   where: {
-  //     id: dto.chatId,
-  //   },
-  //   data: {
-  //     updatedAt: new Date(),
-  //   },
-  // });
-
-  // return message;
 };

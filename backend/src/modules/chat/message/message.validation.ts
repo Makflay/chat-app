@@ -1,6 +1,21 @@
 import { z } from "zod";
 
 export const MESSAGE_MAX_LENGTH = 150;
+export const MESSAGE_SEND_COOLDOWN_MS = 8000;
+
+export class MessageCooldownError extends Error {
+  retryAfterMs: number;
+
+  constructor(retryAfterMs: number) {
+    const retryAfterSeconds = Math.ceil(retryAfterMs / 1000);
+
+    super(
+      `Please wait ${retryAfterSeconds} seconds before sending another message in this chat`,
+    );
+    this.name = "MessageCooldownError";
+    this.retryAfterMs = retryAfterMs;
+  }
+}
 
 export const joinChatSchema = z.object({
   chatId: z.number().int().positive(),

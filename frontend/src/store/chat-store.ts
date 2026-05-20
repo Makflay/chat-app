@@ -4,7 +4,10 @@ import type { Chat } from "../types/chat-types";
 import type { User } from "../types/user-types";
 import { useAuthStore } from "./auth-store";
 import { connectSocket, disconnectSocket, getSocket } from "../socket/socket";
-import { MESSAGE_MAX_LENGTH } from "../constants/chat";
+import {
+  MESSAGE_MAX_LENGTH,
+  MESSAGE_SEND_COOLDOWN_MS,
+} from "../constants/chat";
 
 type AckResponse<T = unknown> =
   | { ok: true; data?: T }
@@ -25,6 +28,12 @@ interface PresenceUpdatePayload {
   onlineUserIds: number[];
 }
 
+interface ChatErrorPayload {
+  message: string;
+  chatId?: number;
+  cooldownUntil?: number;
+}
+
 interface ChatState {
   chats: Chat[];
   activeChatId: number | null;
@@ -37,6 +46,8 @@ interface ChatState {
   isLoadingMessages: boolean;
   mutingUserIds: number[];
   kickingUserIds: number[];
+  messageCooldownUntilByChatId: Record<number, number>;
+  messageCooldownErrorByChatId: Record<number, string>;
   error: string | null;
 
   connect: () => void;
@@ -58,6 +69,8 @@ interface ChatState {
   //clearMessages: () => void;
 }
 
+const messageCooldownTimers = new Map<number, ReturnType<typeof setTimeout>>();
+
 export const useChatStore = create<ChatState>((set, get) => ({
   chats: [],
   activeChatId: null,
@@ -70,6 +83,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isLoadingMessages: false,
   mutingUserIds: [],
   kickingUserIds: [],
+  messageCooldownUntilByChatId: {},
+  messageCooldownErrorByChatId: {},
   error: null,
 
   connect: () => {
@@ -129,13 +144,54 @@ export const useChatStore = create<ChatState>((set, get) => ({
       get().addMessage(message);
     });
 
-    socket.on("chat:error", ({ message }: { message: string }) => {
-      set({
-        error: message,
-        isLoadingChats: false,
-        isLoadingMessages: false,
-      });
-    });
+    socket.on(
+      "chat:error",
+      ({ message, chatId, cooldownUntil }: ChatErrorPayload) => {
+        if (chatId && cooldownUntil && cooldownUntil > Date.now()) {
+          const existingTimer = messageCooldownTimers.get(chatId);
+
+          if (existingTimer) {
+            clearTimeout(existingTimer);
+          }
+
+          set((state) => ({
+            messageCooldownUntilByChatId: {
+              ...state.messageCooldownUntilByChatId,
+              [chatId]: cooldownUntil,
+            },
+            messageCooldownErrorByChatId: {
+              ...state.messageCooldownErrorByChatId,
+              [chatId]: message,
+            },
+          }));
+
+          const timer = setTimeout(() => {
+            set((state) => {
+              const nextCooldowns = { ...state.messageCooldownUntilByChatId };
+              const nextCooldownErrors = {
+                ...state.messageCooldownErrorByChatId,
+              };
+              delete nextCooldowns[chatId];
+              delete nextCooldownErrors[chatId];
+
+              return {
+                messageCooldownUntilByChatId: nextCooldowns,
+                messageCooldownErrorByChatId: nextCooldownErrors,
+              };
+            });
+            messageCooldownTimers.delete(chatId);
+          }, cooldownUntil - Date.now());
+
+          messageCooldownTimers.set(chatId, timer);
+        }
+
+        set({
+          error: message,
+          isLoadingChats: false,
+          isLoadingMessages: false,
+        });
+      },
+    );
 
     socket.on(
       "presence:update",
@@ -167,6 +223,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   },
 
   disconnect: () => {
+    messageCooldownTimers.forEach((timer) => clearTimeout(timer));
+    messageCooldownTimers.clear();
     disconnectSocket();
     set({
       chats: [],
@@ -180,6 +238,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       isLoadingMessages: false,
       mutingUserIds: [],
       kickingUserIds: [],
+      messageCooldownUntilByChatId: {},
+      messageCooldownErrorByChatId: {},
       error: null,
     });
   },
@@ -216,13 +276,17 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   sendMessage: (text: string) => {
     const socket = getSocket();
-    const { activeChatId } = get();
+    const { activeChatId, messageCooldownUntilByChatId } = get();
+    const cooldownUntil = activeChatId
+      ? messageCooldownUntilByChatId[activeChatId] || 0
+      : 0;
 
     if (
       !socket ||
       !activeChatId ||
       !text.trim() ||
-      text.length > MESSAGE_MAX_LENGTH
+      text.length > MESSAGE_MAX_LENGTH ||
+      cooldownUntil > Date.now()
     ) {
       return;
     }
@@ -231,6 +295,41 @@ export const useChatStore = create<ChatState>((set, get) => ({
       chatId: activeChatId,
       text,
     });
+
+    const nextCooldownUntil = Date.now() + MESSAGE_SEND_COOLDOWN_MS;
+    const existingTimer = messageCooldownTimers.get(activeChatId);
+
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+
+    set((state) => ({
+      messageCooldownUntilByChatId: {
+        ...state.messageCooldownUntilByChatId,
+        [activeChatId]: nextCooldownUntil,
+      },
+      messageCooldownErrorByChatId: {
+        ...state.messageCooldownErrorByChatId,
+        [activeChatId]: "",
+      },
+    }));
+
+    const timer = setTimeout(() => {
+      set((state) => {
+        const nextCooldowns = { ...state.messageCooldownUntilByChatId };
+        const nextCooldownErrors = { ...state.messageCooldownErrorByChatId };
+        delete nextCooldowns[activeChatId];
+        delete nextCooldownErrors[activeChatId];
+
+        return {
+          messageCooldownUntilByChatId: nextCooldowns,
+          messageCooldownErrorByChatId: nextCooldownErrors,
+        };
+      });
+      messageCooldownTimers.delete(activeChatId);
+    }, MESSAGE_SEND_COOLDOWN_MS);
+
+    messageCooldownTimers.set(activeChatId, timer);
   },
 
   muteUser: (userId: number) =>

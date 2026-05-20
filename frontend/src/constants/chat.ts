@@ -1,1 +1,2 @@
 export const MESSAGE_MAX_LENGTH = 150;
+export const MESSAGE_SEND_COOLDOWN_MS = 8000;

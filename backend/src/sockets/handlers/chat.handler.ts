@@ -5,6 +5,7 @@ import * as MessageService from "../../modules/chat/message/message.service";
 import {
   joinChatSchema,
   leaveChatSchema,
+  MessageCooldownError,
   sendMessageSchema,
 } from "../../modules/chat/message/message.validation";
 import { ackSuccess, ackError } from "../utils/ack";
@@ -73,8 +74,11 @@ export const registerChatHendlers = (
     socket.on(
       "chat:send",
       async (payload: unknown) => {
+        let chatId: number | null = null;
+
         try {
           const dto = sendMessageSchema.parse(payload);
+          chatId = dto.chatId;
           const userId = socket.data.userId;
 
           const result = await MessageService.sendMessage(userId, dto);
@@ -91,6 +95,15 @@ export const registerChatHendlers = (
             );
           }
         } catch (error) {
+          if (error instanceof MessageCooldownError && chatId) {
+            socket.emit("chat:error", {
+              chatId,
+              cooldownUntil: Date.now() + error.retryAfterMs,
+              message: error.message,
+            });
+            return;
+          }
+
           socket.emit("chat:error", {
             message:
               error instanceof Error ? error.message : "Failed to send message",
