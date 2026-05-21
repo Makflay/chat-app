@@ -76,17 +76,24 @@ const OnlineUsersList = () => {
   });
 
   return (
-    <Paper sx={{ overflow: "hidden" }}>
+    <Paper
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        maxHeight: { xs: 360, md: "calc(100vh - 360px)" },
+        overflow: "hidden",
+      }}
+    >
       <Box sx={{ p: 2, borderBottom: "1px solid", borderColor: "divider" }}>
         <Typography variant="h6">Users</Typography>
       </Box>
 
       {users.length === 0 ? (
-        <Box sx={{ p: 2 }}>
+        <Box sx={{ p: 2, overflowY: "auto" }}>
           <Typography color="text.secondary">No users</Typography>
         </Box>
       ) : (
-        <List sx={{ p: 0 }}>
+        <List sx={{ p: 0, overflowY: "auto" }}>
           {users.map((user) => {
             const isOnline = onlineUserIdSet.has(user.id);
             const canModerate =
