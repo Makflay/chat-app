@@ -102,7 +102,7 @@ export const login = async (
 
   await prisma.user.update({
     where: { id: secretUser.id },
-    data: { activeSessionID: sessionId },
+    data: { activeSessionId: sessionId },
   });
 
   disconnectPreviousSession(secretUser.id);
