@@ -30,4 +30,5 @@ export interface SocketData {
   userId: number;
   username: string;
   role: "USER" | "ADMIN";
+  sessionId: string;
 }

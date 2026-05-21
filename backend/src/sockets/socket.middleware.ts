@@ -22,16 +22,27 @@ export const registerSocketMiddleware = (
 
       const user = await prisma.user.findUnique({
         where: { id: payload.id },
-        select: { id: true, username: true, role: true, isKicked: true },
+        select: {
+          id: true,
+          username: true,
+          role: true,
+          isKicked: true,
+          activeSessionId: true,
+        },
       });
 
-      if (!user || user.isKicked) {
+      if (
+        !user ||
+        user.isKicked ||
+        user.activeSessionId !== payload.sessionId
+      ) {
         throw new Error("Unauthorized");
       }
 
       socket.data.userId = user.id;
       socket.data.username = user.username;
       socket.data.role = user.role;
+      socket.data.sessionId = payload.sessionId;
       next();
     } catch (error) {
       next(new Error("Unauthorized"));

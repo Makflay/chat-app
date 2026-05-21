@@ -3,7 +3,7 @@ export {};
 declare global {
   namespace Express {
     export interface Request {
-      user?: { id: number; role: "USER" | "ADMIN" };
+      user?: { id: number; role: "USER" | "ADMIN"; sessionId: string };
     }
   }
 }

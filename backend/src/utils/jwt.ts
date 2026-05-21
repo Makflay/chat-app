@@ -4,8 +4,14 @@ import { JwtPayload } from "../types/auth.types";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
 
-export const generateToken = (userId: number, role: string): string => {
-  return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: "7d" });
+export const generateToken = (
+  userId: number,
+  role: string,
+  sessionId: string,
+): string => {
+  return jwt.sign({ userId, role, sessionId }, JWT_SECRET, {
+    expiresIn: "7d",
+  });
 };
 
 export const verifyToken = (token: string): JwtPayload => {
@@ -14,9 +20,21 @@ export const verifyToken = (token: string): JwtPayload => {
     throw new Error("Invalid token");
   }
 
-  if (!("userId" in decoded) || !("role" in decoded)) {
+  if (
+    !("userId" in decoded) ||
+    !("role" in decoded) ||
+    !("sessionId" in decoded)
+  ) {
     throw new Error("Invalid token payload");
   }
 
-  return { id: decoded.userId, role: decoded.role };
+  if (typeof decoded.sessionId !== "string") {
+    throw new Error("Invalid token payload");
+  }
+
+  return {
+    id: decoded.userId,
+    role: decoded.role,
+    sessionId: decoded.sessionId,
+  };
 };

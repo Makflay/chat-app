@@ -22,4 +22,5 @@ export interface LoginUser {
 export interface JwtPayload {
   id: number;
   role: Role;
+  sessionId: string;
 }

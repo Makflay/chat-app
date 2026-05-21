@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { Prisma } from "../../generated/prisma";
 import { prisma } from "../../config/db";
 import { hashPassword, comparePassword } from "../../utils/hash.password";
@@ -7,6 +8,22 @@ import { RegisterUser, LoginUser } from "../../types/auth.types";
 import { User } from "../../types/user.types";
 import { attachChatBotForUser } from "../chat/bot/bot.chat.service";
 import { attachUserToGroupChat } from "../chat/chat.group.service";
+import { getIO } from "../../sockets";
+
+const SESSION_REPLACED_MESSAGE =
+  "You were logged out because your account was signed in on another device";
+
+const disconnectPreviousSession = (userId: number) => {
+  try {
+    const io = getIO();
+    io.to(`user: ${userId}`).emit("auth:session:replaced", {
+      message: SESSION_REPLACED_MESSAGE,
+    });
+    io.to(`user: ${userId}`).disconnectSockets(true);
+  } catch {
+    return;
+  }
+};
 
 export const registerUser = async (
   data: RegisterUser,
@@ -19,10 +36,12 @@ export const registerUser = async (
   }
 
   const hashedPassword = await hashPassword(data.password);
+  const sessionId = randomUUID();
   const newUser: Prisma.UserCreateInput = {
     email: data.email,
     password: hashedPassword,
     username: data.username,
+    activeSessionId: sessionId,
   };
   const user = await prisma.user.create({
     data: newUser,
@@ -38,7 +57,7 @@ export const registerUser = async (
   });
   await attachChatBotForUser(user.id);
   await attachUserToGroupChat(user.id);
-  const token = generateToken(user.id, user.role);
+  const token = generateToken(user.id, user.role, sessionId);
 
   return { user, token };
 };
@@ -79,7 +98,16 @@ export const login = async (
     throw new Error("Wrong password");
   }
 
-  const token = generateToken(secretUser.id, secretUser.role);
+  const sessionId = randomUUID();
+
+  await prisma.user.update({
+    where: { id: secretUser.id },
+    data: { activeSessionID: sessionId },
+  });
+
+  disconnectPreviousSession(secretUser.id);
+
+  const token = generateToken(secretUser.id, secretUser.role, sessionId);
   const user: User = {
     id: secretUser.id,
     username: secretUser.username,

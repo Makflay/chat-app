@@ -14,7 +14,7 @@ interface IAuthState {
   login: (dto: LoginDto) => Promise<void>;
   register: (dto: RegisterDto) => Promise<void>;
   fetchMe: () => Promise<void>;
-  logout: () => void;
+  logout: (message?: string) => void;
   clearError: () => void;
   setInitialized: (value: boolean) => void;
 }
@@ -117,13 +117,13 @@ export const useAuthStore = create<IAuthState>()(
         }
       },
 
-      logout: () => {
+      logout: (message) => {
         set({
           token: null,
           user: null,
           isLoading: false,
           isInitialized: true,
-          error: null,
+          error: message || null,
         });
       },
 

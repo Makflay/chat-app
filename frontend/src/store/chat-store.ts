@@ -34,6 +34,10 @@ interface ChatErrorPayload {
   cooldownUntil?: number;
 }
 
+interface SessionReplacedPayload {
+  message: string;
+}
+
 interface ChatState {
   chats: Chat[];
   activeChatId: number | null;
@@ -104,6 +108,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     socket.off("user:unmuted");
     socket.off("user:kicked");
     socket.off("user:unkicked");
+    socket.off("auth:session:replaced");
 
     socket.on("connect", () => {
       set({ isConnected: true, error: null });
@@ -220,6 +225,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
     socket.on("user:unkicked", ({ user }: UserAckPayload) => {
       get().updateUserKickState(user);
     });
+
+    socket.on(
+      "auth:session:replaced",
+      ({ message }: SessionReplacedPayload) => {
+        useAuthStore.getState().logout(message);
+        get().disconnect();
+      },
+    );
   },
 
   disconnect: () => {
