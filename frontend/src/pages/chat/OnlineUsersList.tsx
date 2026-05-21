@@ -18,6 +18,7 @@ import PersonOffIcon from "@mui/icons-material/PersonOff";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import { useAuthStore } from "../../store/auth-store";
 import { useChatStore } from "../../store/chat-store";
+import { getNicknameColorPair } from "../../utils/nickname-colors";
 
 const OnlineUsersList = () => {
   const currentUser = useAuthStore((store) => store.user);
@@ -96,16 +97,30 @@ const OnlineUsersList = () => {
             const isKickActionPending = kickingUserIds.includes(user.id);
             const muteTooltip = user.isMuted ? "Unmute user" : "Mute user";
             const kickTooltip = user.isKicked ? "Unkick user" : "Kick user";
+            const nicknameColorPair = getNicknameColorPair(user.id);
 
             return (
               <ListItem key={user.id} alignItems="flex-start">
                 <ListItemAvatar>
-                  <Avatar>{user.username.charAt(0).toUpperCase()}</Avatar>
+                  <Avatar
+                    sx={{
+                      bgcolor: nicknameColorPair.avatarBackground,
+                      color: nicknameColorPair.avatarText,
+                    }}
+                  >
+                    {user.username.charAt(0).toUpperCase()}
+                  </Avatar>
                 </ListItemAvatar>
 
                 <Box sx={{ minWidth: 0, flex: 1 }}>
                   <Stack direction="row" alignItems="center" spacing={0.75}>
-                    <Typography noWrap sx={{ minWidth: 0 }}>
+                    <Typography
+                      noWrap
+                      sx={{
+                        minWidth: 0,
+                        color: nicknameColorPair.nicknameText,
+                      }}
+                    >
                       {user.username}
                     </Typography>
                     {user.isMuted && (

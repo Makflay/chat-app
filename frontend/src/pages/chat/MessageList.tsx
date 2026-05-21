@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import { useAuthStore } from "../../store/auth-store";
 import { useChatStore } from "../../store/chat-store";
+import { getNicknameColorPair } from "../../utils/nickname-colors";
 
 const MessageList = () => {
   const user = useAuthStore((state) => state.user);
@@ -49,6 +50,7 @@ const MessageList = () => {
         <Stack spacing={1.5}>
           {messages.map((message) => {
             const isOwnMessage = message.sender.id === user?.id;
+            const nicknameColorPair = getNicknameColorPair(message.sender.id);
 
             return (
               <Box
@@ -83,8 +85,10 @@ const MessageList = () => {
                       {!isOwnMessage && (
                         <Typography
                           variant="caption"
-                          color="text.secondary"
-                          sx={{ flexShrink: 0 }}
+                          sx={{
+                            color: nicknameColorPair.nicknameText,
+                            flexShrink: 0,
+                          }}
                         >
                           {message.sender.username}
                         </Typography>
