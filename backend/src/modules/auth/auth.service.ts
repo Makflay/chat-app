@@ -3,7 +3,6 @@ import { Prisma } from "../../generated/prisma";
 import { prisma } from "../../config/db";
 import { hashPassword, comparePassword } from "../../utils/hash.password";
 import { generateToken } from "../../utils/jwt";
-import "../../config/env";
 import { RegisterUser, LoginUser } from "../../types/auth.types";
 import { User } from "../../types/user.types";
 import { attachChatBotForUser } from "../chat/bot/bot.chat.service";

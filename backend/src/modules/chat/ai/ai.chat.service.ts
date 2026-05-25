@@ -1,12 +1,12 @@
-import "../../../config/env";
+import { env } from "../../../config/env.config";
 import { generateYandexReply } from "./ai.yandex.provider";
 
 export type AiProvider = "yandex" | "openai" | "none";
 
 export const getActiveAiProvider = (): AiProvider => {
-  const provider = process.env.AI_PROVAIDER;
+  const provider = env.AI_PROVAIDER;
 
-  if (provider === "yandex" && process.env.YANDEX_API_KEY) {
+  if (provider === "yandex" && env.YANDEX_API_KEY) {
     return "yandex";
   }
 

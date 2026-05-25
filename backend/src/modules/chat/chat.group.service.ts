@@ -1,11 +1,11 @@
 import { prisma } from "../../config/db";
 import { ChatType, Role } from "../../generated/prisma";
-import "../../config/env";
+import { env } from "../../config/env.config";
 import type { Chat } from "../../types/chat.types";
 
 export const ensureGroupChat = async (): Promise<Chat> => {
   try {
-    const SYSTEM_GROUP_KEY = process.env.SYSTEM_GROUP_KEY;
+    const SYSTEM_GROUP_KEY = env.SYSTEM_GROUP_KEY;
 
     if (!SYSTEM_GROUP_KEY) {
       throw new Error("Global chat credetinals are not set in .env");

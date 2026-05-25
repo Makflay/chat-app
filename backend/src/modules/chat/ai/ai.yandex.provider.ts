@@ -1,4 +1,4 @@
-import "../../../config/env";
+import { env } from "../../../config/env.config";
 
 type YandexMessage = {
   role: "system" | "user" | "assistant";
@@ -19,8 +19,8 @@ export const generateYandexReply = async ({
   systemPrompt,
   history = [],
 }: GenerateYandexReplyParams): Promise<string> => {
-  const apiKey = process.env.YANDEX_API_KEY;
-  const modelUri = process.env.YANDEX_MODEL_URI;
+  const apiKey = env.YANDEX_API_KEY;
+  const modelUri = env.YANDEX_MODEL_URI;
 
   if (!apiKey) {
     throw new Error("YANDEX_API_KEY is not set");

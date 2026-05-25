@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
-import "../config/env";
+import { env } from "../config/env.config";
 import { JwtPayload } from "../types/auth.types";
 
-const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_SECRET = env.JWT_SECRET;
 
 export const generateToken = (
   userId: number,

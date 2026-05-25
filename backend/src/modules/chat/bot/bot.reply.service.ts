@@ -1,4 +1,3 @@
-import "../../../config/env";
 import { generateAiReply, getActiveAiProvider } from "../ai/ai.chat.service";
 
 export const buildEchoReply = async (text: string): Promise<string> => {

@@ -2,13 +2,13 @@ import { prisma } from "../../../config/db";
 import { Prisma } from "../../../generated/prisma";
 import { ChatType, Role } from "../../../generated/prisma";
 import type { User } from "../../../types/user.types";
-import "../../../config/env";
+import { env } from "../../../config/env.config";
 
 export const ensureChatBot = async (): Promise<User> => {
   try {
-    const botEmail = process.env.BOT_EMAIL!;
-    const botName = process.env.BOT_NAME!;
-    const botPassword = process.env.BOT_PASSWORD!;
+    const botEmail = env.BOT_EMAIL;
+    const botName = env.BOT_NAME;
+    const botPassword = env.BOT_PASSWORD;
 
     if (!botEmail || !botName || !botPassword) {
       throw new Error("Bot credetinals are not set in .env");

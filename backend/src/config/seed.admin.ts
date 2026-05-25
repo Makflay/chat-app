@@ -1,15 +1,15 @@
 import { Prisma, Role } from "../generated/prisma";
 import { prisma } from "./db";
 import { hashPassword } from "../utils/hash.password";
-import "./env";
+import { env } from "./env.config";
 import { attachUserToGroupChat } from "../modules/chat/chat.group.service";
 import { attachChatBotForUser } from "../modules/chat/bot/bot.chat.service";
 
 export const seedAdmin = async (): Promise<void> => {
   try {
-    const adminName = process.env.ADMIN_NAME!;
-    const adminEmail = process.env.ADMIN_EMAIL!;
-    const adminPassword = process.env.ADMIN_PASSWORD!;
+    const adminName = env.ADMIN_NAME;
+    const adminEmail = env.ADMIN_EMAIL;
+    const adminPassword = env.ADMIN_PASSWORD;
 
     if (!adminName || !adminEmail || !adminPassword) {
       console.log("Admin credentials are not set in .env");
