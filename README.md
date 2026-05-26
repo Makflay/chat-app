@@ -1,59 +1,111 @@
 # Real-time Chat App
 
-A simple real-time chat application with authentication and basic admin features.  
-This project was built as a pet project to practice fullstack development, WebSockets, and authentication.
+A fullstack real-time chat application built with React, Node.js, Socket.IO, and PostgreSQL.
+
+The project was created as a pet project to practice:
+
+- WebSocket architecture
+- realtime communication
+- authentication/authorization
+- frontend state management
+- admin moderation systems
+- responsive SPA UI/UX
 
 ---
 
 ## Tech Stack
 
-**Frontend:**
+# Frontend
 
 - React
 - TypeScript
 - Zustand
 - Material UI
 
-**Backend:**
+# Backend
 
 - Node.js
 - Express
 - TypeScript
 - Socket.IO (WebSocket)
 
-**Database:**
+# Database
 
-- MySQL
+- PostgreSQL
 - Prisma
 
-**Authentication:**
+# Authentication & Security
 
-- JWT
-- bcrypt
+- JWT Authentication
+- bcrypt password hashing
 
 ---
 
 ## Features
 
-- User registration and login
-- Global real-time chat (via WebSocket)
-- Admin features:
-  - Mute users (cannot send messages but can still read)
-- Delete own messages
+# Authentication
+
+- User registration
+- User login
+- JWT-based authentication
+- Authentication via HTTP
+- All realtime functionality works via WebSocket
+
+# Realtime Chat
+
+Global Chat:
+
+- Realtime message sending/receiving
+- Message history loading
+- Automatic synchronization between users
+
+AI Assistant Chat:
+
+- Built-in AI assistant chat
+- Yandex AI integration
+- Realtime assistant responses
+
+# User System
+
+- Online/offline user tracking
+- Responsive online users list
+- Online users automatically move to the top
+- Offline users move to the bottom
+- Random nickname color generation for each user
+
+# Session Protection
+
+If the same account logs in from another device/browser:
+
+- the newest session stays active
+- previous session gets disconnected automatically
+
+# Message Restrictions
+
+- Maximum 150 characters per message
+- 8-second cooldown between messages
+- Muted users cannot send messages
+
+# Admin Features
+
+- Kick/unkick users
+- Mute/Unmute users
 
 ---
 
-## Work in Progress
+## Requirements
 
-- Docker setup (planned)
-- Additional admin features
-- Project structure improvements
+Before starting the project, make sure you have installed:
+
+- Node.js >= 18
+- npm >= 9
+- PostgreSQL
 
 ---
 
-## Installation & Setup (npm)
+## Installation & Start
 
-### 1. Clone the repository
+## 1. Clone the repository
 
 ```bash
 git clone https://github.com/Makflay/chat-app.git
@@ -62,16 +114,16 @@ cd chat-app
 
 ---
 
-### 2. Install dependencies
+## 2. Install dependencies
 
-#### Backend
+### Backend
 
 ```bash
 cd backend
 npm install
 ```
 
-#### Frontend
+### Frontend
 
 ```bash
 cd frontend
@@ -80,52 +132,101 @@ npm install
 
 ---
 
-### 3. Environment variables
+## 3. Configure environment variables
 
 Create a `.env` file inside the **chat-app** folder based on `.env.example`:
 
+Example backend variables:
+
+DATABASE_URL=
+JWT_SECRET=
+PORT=
+
 ---
 
-### 4. Database setup
+## 4. Database setup
 
 ```bash
-cd server
-npx prisma migrate dev
+cd backend
 npx prisma generate
+npx prisma migrate dev
 ```
 
 ---
 
-### 5. Run the application
+## Run the application
 
-#### Backend
+### Backend
 
 ```bash
-cd server
+cd backend
 npm run dev
 ```
 
-#### Frontend
+### Frontend
 
 ```bash
-cd client
+cd frontend
 npm run dev
 ```
 
 ---
 
-## Architecture Overview
+## Available Scripts
 
-- The client communicates with the server using Socket.IO
-- JWT is used for authentication
-- Prisma is used as an ORM for MySQL
-- Zustand manages frontend state
+### Backend
+
+Start backend in development mode:
+
+```bash
+npm run dev
+```
+
+Build backend:
+
+```bash
+npm run build
+```
+
+Run production build:
+
+```bash
+npm run start
+```
+
+### Frontend
+
+Start Vite development server:
+
+```bash
+npm run dev
+```
+
+Build frontend:
+
+```bash
+npm run build
+```
 
 ---
 
-## Notes
+## Architecture Notes
 
-Currently, the project can be run only via npm.  
-Docker support will be added later.
+- HTTP is used only for authentication and initial requests
+- Realtime communication works through WebSocket (Socket.IO)
+- Zustand manages frontend global state
+- Prisma is used as ORM for PostgreSQL
+- The application follows SPA architecture
 
 ---
+
+## Future Improvements
+
+- OAuth authentication (Google / Yandex)
+- Registration and verification via external providers
+- Private chats
+- Docker support
+- Message editing/deleting
+- E2E tests
+- Better mobile UX
+- Deployment configuration
