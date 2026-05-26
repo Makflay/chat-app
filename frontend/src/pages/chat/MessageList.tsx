@@ -1,14 +1,9 @@
 import { useEffect, useRef } from "react";
-import {
-  Box,
-  Chip,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import { useAuthStore } from "../../store/auth-store";
 import { useChatStore } from "../../store/chat-store";
 import { getNicknameColorPair } from "../../utils/nickname-colors";
+import { panelSx, scrollPanelSx } from "./styles/layout";
 
 const MessageList = () => {
   const user = useAuthStore((state) => state.user);
@@ -34,20 +29,53 @@ const MessageList = () => {
     <Paper
       ref={containerRef}
       sx={{
+        ...panelSx,
+        ...scrollPanelSx,
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
         p: 2,
-        height: 500,
-        overflowY: "auto",
-        overflowX: "hidden",
+        minHeight: { xs: 360, md: 0 },
       }}
     >
       {!activeChatId ? (
-        <Typography color="text.secondary">Select chat</Typography>
+        <Box
+          sx={{
+            flex: 1,
+            display: "grid",
+            placeItems: "center",
+            textAlign: "center",
+          }}
+        >
+          <Typography color="text.secondary">Select chat</Typography>
+        </Box>
       ) : isLoadingMessages ? (
-        <Typography color="text.secondary">Loading messages...</Typography>
+        <Box
+          sx={{
+            flex: 1,
+            display: "grid",
+            placeItems: "center",
+            textAlign: "center",
+          }}
+        >
+          <Typography color="text.secondary">Loading messages...</Typography>
+        </Box>
       ) : !messages || messages.length === 0 ? (
-        <Typography color="text.secondary">No messages</Typography>
+        <Box
+          sx={{
+            flex: 1,
+            display: "grid",
+            placeItems: "center",
+            textAlign: "center",
+          }}
+        >
+          <Typography color="text.secondary">No messages</Typography>
+        </Box>
       ) : (
-        <Stack spacing={1.5}>
+        <Stack
+          spacing={1.5}
+          sx={{ justifyContent: "flex-end", minHeight: "100%" }}
+        >
           {messages.map((message) => {
             const isOwnMessage = message.sender.id === user?.id;
             const nicknameColorPair = getNicknameColorPair(message.sender.id);
@@ -64,9 +92,11 @@ const MessageList = () => {
                   sx={{
                     p: 1.5,
                     borderRadius: 2,
-                    maxWidth: "70%",
-                    bgcolor: "grey.100",
-                    color: "black",
+                    maxWidth: { xs: "86%", sm: "72%" },
+                    bgcolor: isOwnMessage ? "primary.main" : "grey.100",
+                    color: isOwnMessage
+                      ? "primary.contrastText"
+                      : "text.primary",
                     overflowWrap: "anywhere",
                     wordBreak: "break-word",
                     whiteSpace: "pre-wrap",
@@ -110,14 +140,23 @@ const MessageList = () => {
                         />
                       )}
                     </Box>
-                    <Typography variant="caption" color="text.secondary">
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: isOwnMessage
+                          ? "rgba(255, 255, 255, 0.76)"
+                          : "text.secondary",
+                      }}
+                    >
                       {new Date(message.createdAt).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
                     </Typography>
                   </Box>
-                  <Typography variant="body1">{message.content}</Typography>
+                  <Typography variant="body1">
+                    {message.content || ""}
+                  </Typography>
                 </Box>
               </Box>
             );

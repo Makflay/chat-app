@@ -12,18 +12,17 @@ import SmartToyIcon from "@mui/icons-material/SmartToy";
 import GroupsIcon from "@mui/icons-material/Groups";
 import ForumIcon from "@mui/icons-material/Forum";
 import { useChatStore } from "../../store/chat-store";
+import { panelHeaderSx, panelSx, scrollPanelSx } from "./styles/layout";
 
 const ChatList = () => {
   const chats = useChatStore((store) => store.chats);
   const activeChatId = useChatStore((store) => store.activeChatId);
   const openChatId = useChatStore((store) => store.openChat);
   const isLoadingChats = useChatStore((store) => store.isLoadingChats);
-  console.log("chats", chats);
-  console.log("isLoadingChats", isLoadingChats);
 
   if (isLoadingChats) {
     return (
-      <Paper sx={{ p: 2, height: "100%" }}>
+      <Paper sx={{ ...panelSx, p: 2, minHeight: 180 }}>
         <Box display="flex" justifyContent="center" py={4}>
           <CircularProgress />
         </Box>
@@ -32,12 +31,20 @@ const ChatList = () => {
   }
 
   return (
-    <Paper sx={{ height: "100%", overflow: "hidden" }}>
-      <Box sx={{ p: 2, borderBottom: "1px solid", borderColor: "divider" }}>
+    <Paper
+      sx={{
+        ...panelSx,
+        display: "flex",
+        flexDirection: "column",
+        minHeight: 0,
+        overflow: "hidden",
+      }}
+    >
+      <Box sx={panelHeaderSx}>
         <Typography variant="h6">Chats</Typography>
       </Box>
 
-      <List sx={{ p: 0 }}>
+      <List sx={{ ...scrollPanelSx, p: 0 }}>
         {chats.map((chat) => {
           const icon =
             chat.type === "ASSISTANT" ? (
@@ -50,7 +57,7 @@ const ChatList = () => {
 
           const title =
             chat.title ||
-            (chat.title === "ASSISTANT"
+            (chat.type === "ASSISTANT"
               ? "Assistant"
               : chat.type === "GROUP"
                 ? "Group Chat"
@@ -68,7 +75,8 @@ const ChatList = () => {
               <ListItemText
                 primary={title}
                 secondary={chat.lastMessage?.content || "No messages"}
-                // secondaryTypographyProps={{noWrap: true}}
+                primaryTypographyProps={{ noWrap: true, fontWeight: 700 }}
+                secondaryTypographyProps={{ noWrap: true }}
               />
             </ListItemButton>
           );

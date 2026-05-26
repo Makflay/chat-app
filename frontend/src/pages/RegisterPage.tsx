@@ -3,14 +3,14 @@ import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
+  Link as MuiLink,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/auth-store";
+import AuthLayout from "../layouts/AuthLayout";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -37,52 +37,55 @@ const RegisterPage = () => {
   };
 
   return (
-    <Card>
-      <CardContent>
-        <Box component="form" onSubmit={onSubmit}>
-          <Stack spacing={2}>
-            <Typography variant="h4">Register</Typography>
+    <AuthLayout title="Create account" subtitle="Join the chat workspace.">
+      <Box component="form" onSubmit={onSubmit}>
+        <Stack spacing={2.25}>
+          {error && <Alert severity="error">{error}</Alert>}
 
-            {error && <Alert severity="error">{error}</Alert>}
+          <TextField
+            label="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            fullWidth
+            required
+          />
 
-            <TextField
-              label="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              fullWidth
-              required
-            />
+          <TextField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            fullWidth
+            required
+          />
 
-            <TextField
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              fullWidth
-              required
-            />
+          <TextField
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            fullWidth
+            required
+          />
 
-            <TextField
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              fullWidth
-              required
-            />
+          <Button
+            type="submit"
+            variant="contained"
+            size="large"
+            disabled={isLoading}
+          >
+            {isLoading ? "Creating account..." : "Register"}
+          </Button>
 
-            <Button type="submit" variant="contained" disabled={isLoading}>
-              {isLoading ? "Creating account" : "Register"}
-            </Button>
-
-            <Typography variant="body2">
-              Already have an account?
-              <Link to="/login">Login here</Link>
-            </Typography>
-          </Stack>
-        </Box>
-      </CardContent>
-    </Card>
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            Already have an account?{" "}
+            <MuiLink component={RouterLink} to="/login" underline="hover">
+              Login here
+            </MuiLink>
+          </Typography>
+        </Stack>
+      </Box>
+    </AuthLayout>
   );
 };
 

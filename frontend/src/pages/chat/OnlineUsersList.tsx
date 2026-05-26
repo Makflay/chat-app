@@ -19,6 +19,7 @@ import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import { useAuthStore } from "../../store/auth-store";
 import { useChatStore } from "../../store/chat-store";
 import { getNicknameColorPair } from "../../utils/nickname-colors";
+import { panelHeaderSx, panelSx, scrollPanelSx } from "./styles/layout";
 
 const OnlineUsersList = () => {
   const currentUser = useAuthStore((store) => store.user);
@@ -78,22 +79,26 @@ const OnlineUsersList = () => {
   return (
     <Paper
       sx={{
+        ...panelSx,
         display: "flex",
         flexDirection: "column",
-        maxHeight: { xs: 360, md: "calc(100vh - 360px)" },
+        width: "100%",
+        flex: { md: 1 },
+        maxHeight: { sm: 280, md: "none" },
+        minHeight: 0,
         overflow: "hidden",
       }}
     >
-      <Box sx={{ p: 2, borderBottom: "1px solid", borderColor: "divider" }}>
+      <Box sx={panelHeaderSx}>
         <Typography variant="h6">Users</Typography>
       </Box>
 
       {users.length === 0 ? (
-        <Box sx={{ p: 2, overflowY: "auto" }}>
+        <Box sx={{ ...scrollPanelSx, p: 2 }}>
           <Typography color="text.secondary">No users</Typography>
         </Box>
       ) : (
-        <List sx={{ p: 0, overflowY: "auto" }}>
+        <List sx={{ ...scrollPanelSx, p: 0 }}>
           {users.map((user) => {
             const isOnline = onlineUserIdSet.has(user.id);
             const canModerate =

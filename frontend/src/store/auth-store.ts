@@ -95,7 +95,6 @@ export const useAuthStore = create<IAuthState>()(
         try {
           set({ isLoading: true, error: null });
           const data = await authApi.getCurrentUser();
-          console.log("data getCurrentUser", data);
 
           set({
             user: data.user,

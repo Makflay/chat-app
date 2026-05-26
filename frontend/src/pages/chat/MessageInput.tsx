@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Paper, Stack, TextField } from "@mui/material";
 import { useAuthStore } from "../../store/auth-store";
 import { useChatStore } from "../../store/chat-store";
@@ -6,9 +6,11 @@ import {
   MESSAGE_MAX_LENGTH,
   MESSAGE_SEND_COOLDOWN_MS,
 } from "../../constants/chat";
+import { panelSx } from "./styles/layout";
 
 const MessageInput = () => {
   const [content, setContent] = useState("");
+  const [now, setNow] = useState(() => Date.now());
   const user = useAuthStore((state) => state.user);
   const sendMessage = useChatStore((state) => state.sendMessage);
   const activeChatId = useChatStore((state) => state.activeChatId);
@@ -26,7 +28,7 @@ const MessageInput = () => {
   const cooldownError = activeChatId
     ? messageCooldownErrorByChatId[activeChatId]
     : undefined;
-  const isCoolingDown = cooldownUntil > Date.now();
+  const isCoolingDown = cooldownUntil > now;
   const cooldownMessage =
     cooldownError ||
     `Please wait ${MESSAGE_SEND_COOLDOWN_MS / 1000} seconds before sending another message in this chat`;
@@ -39,9 +41,19 @@ const MessageInput = () => {
     setContent("");
   };
 
+  useEffect(() => {
+    if (!cooldownUntil) return;
+
+    const intervalId = window.setInterval(() => {
+      setNow(Date.now());
+    }, 250);
+
+    return () => window.clearInterval(intervalId);
+  }, [cooldownUntil]);
+
   return (
-    <Paper sx={{ p: 2 }}>
-      <Stack direction="row" spacing={1}>
+    <Paper sx={{ ...panelSx, p: { xs: 1.5, sm: 2 } }}>
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
         <TextField
           fullWidth
           autoComplete="off"
@@ -69,7 +81,12 @@ const MessageInput = () => {
             }
           }}
         />
-        <Button variant="contained" onClick={onSend} disabled={isSendDisabled}>
+        <Button
+          variant="contained"
+          onClick={onSend}
+          disabled={isSendDisabled}
+          sx={{ minWidth: { sm: 104 } }}
+        >
           Send
         </Button>
       </Stack>

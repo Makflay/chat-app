@@ -3,14 +3,14 @@ import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
+  Link as MuiLink,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/auth-store";
+import AuthLayout from "../layouts/AuthLayout";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -35,43 +35,47 @@ const LoginPage = () => {
     }
   };
   return (
-    <Card>
-      <CardContent>
-        <Box component="form" onSubmit={onSubmit}>
-          <Stack spacing={2}>
-            <Typography variant="h4">Login</Typography>
+    <AuthLayout title="Welcome back" subtitle="Sign in to continue chatting.">
+      <Box component="form" onSubmit={onSubmit}>
+        <Stack spacing={2.25}>
+          {error && <Alert severity="error">{error}</Alert>}
 
-            {error && <Alert severity="error">{error}</Alert>}
+          <TextField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            fullWidth
+            required
+          />
 
-            <TextField
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              fullWidth
-              required
-            />
+          <TextField
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            fullWidth
+            required
+          />
 
-            <TextField
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              fullWidth
-              required
-            />
+          <Button
+            type="submit"
+            variant="contained"
+            size="large"
+            disabled={isLoading}
+          >
+            {isLoading ? "Logging in..." : "Login"}
+          </Button>
 
-            <Button type="submit" variant="contained" disabled={isLoading}>
-              {isLoading ? "Loggin in ..." : "Login"}
-            </Button>
-            <Typography variant="body2">
-              Don't have an account?
-              <Link to="/register">Register here</Link>
-            </Typography>
-          </Stack>
-        </Box>
-      </CardContent>
-    </Card>
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            Don't have an account?{" "}
+            <MuiLink component={RouterLink} to="/register" underline="hover">
+              Register here
+            </MuiLink>
+          </Typography>
+        </Stack>
+      </Box>
+    </AuthLayout>
   );
 };
 

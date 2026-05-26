@@ -7,7 +7,6 @@ import RegisterPage from "../pages/RegisterPage";
 import ChatPage from "../pages/chat/ChatPage";
 
 const AppRouter = () => {
-  console.log("AppRouter");
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/chat" replace />} />

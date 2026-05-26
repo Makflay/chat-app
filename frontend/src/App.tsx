@@ -14,7 +14,6 @@ function App() {
       await useAuthStore.persist.rehydrate();
 
       const { token } = useAuthStore.getState();
-      console.log("token useEffect App", token);
 
       if (!token) {
         setInitialized(true);
@@ -28,8 +27,6 @@ function App() {
 
     void initAuth();
   }, [fetchMe, setInitialized]);
-
-  console.log("isInitialized App.tsx", isInitialized);
 
   if (!isInitialized) {
     return <p>Loading...</p>;

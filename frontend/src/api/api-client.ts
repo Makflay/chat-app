@@ -7,7 +7,6 @@ const apiClient = async <T>(
   options: FetchOptions = {},
 ): Promise<T> => {
   const token = useAuthStore.getState().token;
-  console.log("token api-client", token);
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -34,9 +33,6 @@ const apiClient = async <T>(
   if (!response.ok || !result.success) {
     throw new Error(result.message || "Unknown API error");
   }
-
-  console.log("result", result);
-  console.log("result.data", result.data);
 
   return result.data;
 };
