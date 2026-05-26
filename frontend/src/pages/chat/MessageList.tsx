@@ -27,142 +27,149 @@ const MessageList = () => {
 
   return (
     <Paper
-      ref={containerRef}
       sx={{
         ...panelSx,
-        ...scrollPanelSx,
-        flex: 1,
+        flex: "1 1 0",
         display: "flex",
         flexDirection: "column",
-        p: 2,
-        minHeight: { xs: 360, md: 0 },
+        minHeight: 0,
+        overflow: "hidden",
       }}
     >
-      {!activeChatId ? (
-        <Box
-          sx={{
-            flex: 1,
-            display: "grid",
-            placeItems: "center",
-            textAlign: "center",
-          }}
-        >
-          <Typography color="text.secondary">Select chat</Typography>
-        </Box>
-      ) : isLoadingMessages ? (
-        <Box
-          sx={{
-            flex: 1,
-            display: "grid",
-            placeItems: "center",
-            textAlign: "center",
-          }}
-        >
-          <Typography color="text.secondary">Loading messages...</Typography>
-        </Box>
-      ) : !messages || messages.length === 0 ? (
-        <Box
-          sx={{
-            flex: 1,
-            display: "grid",
-            placeItems: "center",
-            textAlign: "center",
-          }}
-        >
-          <Typography color="text.secondary">No messages</Typography>
-        </Box>
-      ) : (
-        <Stack
-          spacing={1.5}
-          sx={{ justifyContent: "flex-end", minHeight: "100%" }}
-        >
-          {messages.map((message) => {
-            const isOwnMessage = message.sender.id === user?.id;
-            const nicknameColorPair = getNicknameColorPair(message.sender.id);
+      <Box
+        ref={containerRef}
+        sx={{
+          ...scrollPanelSx,
+          flex: 1,
+          minHeight: 0,
+          display: "flex",
+          flexDirection: "column",
+          p: 2,
+        }}
+      >
+        {!activeChatId ? (
+          <Box
+            sx={{
+              flex: 1,
+              display: "grid",
+              placeItems: "center",
+              textAlign: "center",
+            }}
+          >
+            <Typography color="text.secondary">Select chat</Typography>
+          </Box>
+        ) : isLoadingMessages ? (
+          <Box
+            sx={{
+              flex: 1,
+              display: "grid",
+              placeItems: "center",
+              textAlign: "center",
+            }}
+          >
+            <Typography color="text.secondary">Loading messages...</Typography>
+          </Box>
+        ) : !messages || messages.length === 0 ? (
+          <Box
+            sx={{
+              flex: 1,
+              display: "grid",
+              placeItems: "center",
+              textAlign: "center",
+            }}
+          >
+            <Typography color="text.secondary">No messages</Typography>
+          </Box>
+        ) : (
+          <Stack spacing={1.5} sx={{ mt: "auto" }}>
+            {messages.map((message) => {
+              const isOwnMessage = message.sender.id === user?.id;
+              const nicknameColorPair = getNicknameColorPair(message.sender.id);
 
-            return (
-              <Box
-                key={message.id}
-                sx={{
-                  display: "flex",
-                  justifyContent: isOwnMessage ? "flex-end" : "flex-start",
-                }}
-              >
+              return (
                 <Box
+                  key={message.id}
                   sx={{
-                    p: 1.5,
-                    borderRadius: 2,
-                    maxWidth: { xs: "86%", sm: "72%" },
-                    bgcolor: isOwnMessage ? "primary.main" : "grey.100",
-                    color: isOwnMessage
-                      ? "primary.contrastText"
-                      : "text.primary",
-                    overflowWrap: "anywhere",
-                    wordBreak: "break-word",
-                    whiteSpace: "pre-wrap",
+                    display: "flex",
+                    justifyContent: isOwnMessage ? "flex-end" : "flex-start",
                   }}
                 >
                   <Box
                     sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      mb: 0.5,
-                      gap: 1,
+                      p: 1.5,
+                      borderRadius: 2,
+                      maxWidth: { xs: "86%", sm: "72%" },
+                      bgcolor: isOwnMessage ? "primary.main" : "grey.100",
+                      color: isOwnMessage
+                        ? "primary.contrastText"
+                        : "text.primary",
+                      overflowWrap: "anywhere",
+                      wordBreak: "break-word",
+                      whiteSpace: "pre-wrap",
                     }}
                   >
-                    <Box display="flex" alignItems="center" gap={0.75}>
-                      {!isOwnMessage && (
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: nicknameColorPair.nicknameText,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {message.sender.username}
-                        </Typography>
-                      )}
-                      {message.sender.isMuted && (
-                        <Chip
-                          label="Muted"
-                          size="small"
-                          variant="outlined"
-                          sx={{ height: 20, fontSize: 11 }}
-                        />
-                      )}
-                      {message.sender.isKicked && (
-                        <Chip
-                          label="Kicked"
-                          size="small"
-                          variant="outlined"
-                          sx={{ height: 20, fontSize: 11 }}
-                        />
-                      )}
-                    </Box>
-                    <Typography
-                      variant="caption"
+                    <Box
                       sx={{
-                        color: isOwnMessage
-                          ? "rgba(255, 255, 255, 0.76)"
-                          : "text.secondary",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        mb: 0.5,
+                        gap: 1,
                       }}
                     >
-                      {new Date(message.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      <Box display="flex" alignItems="center" gap={0.75}>
+                        {!isOwnMessage && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: nicknameColorPair.nicknameText,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {message.sender.username}
+                          </Typography>
+                        )}
+                        {message.sender.isMuted && (
+                          <Chip
+                            label="Muted"
+                            size="small"
+                            variant="outlined"
+                            sx={{ height: 20, fontSize: 11 }}
+                          />
+                        )}
+                        {message.sender.isKicked && (
+                          <Chip
+                            label="Kicked"
+                            size="small"
+                            variant="outlined"
+                            sx={{ height: 20, fontSize: 11 }}
+                          />
+                        )}
+                      </Box>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: isOwnMessage
+                            ? "rgba(255, 255, 255, 0.76)"
+                            : "text.secondary",
+                        }}
+                      >
+                        {new Date(message.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </Typography>
+                    </Box>
+                    <Typography variant="body1">
+                      {message.content || ""}
                     </Typography>
                   </Box>
-                  <Typography variant="body1">
-                    {message.content || ""}
-                  </Typography>
                 </Box>
-              </Box>
-            );
-          })}
-        </Stack>
-      )}
+              );
+            })}
+          </Stack>
+        )}
+      </Box>
     </Paper>
   );
 };

@@ -52,7 +52,7 @@ const MessageInput = () => {
   }, [cooldownUntil]);
 
   return (
-    <Paper sx={{ ...panelSx, p: { xs: 1.5, sm: 2 } }}>
+    <Paper sx={{ ...panelSx, flexShrink: 0, p: { xs: 1.5, sm: 2 } }}>
       <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
         <TextField
           fullWidth

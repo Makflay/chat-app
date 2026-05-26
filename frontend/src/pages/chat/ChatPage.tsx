@@ -16,6 +16,7 @@ const ChatPage = () => {
         minHeight: 0,
         display: "flex",
         flexDirection: "column",
+        overflow: "hidden",
         bgcolor: "background.default",
       }}
     >
@@ -27,19 +28,32 @@ const ChatPage = () => {
           flex: 1,
           minHeight: 0,
           display: "flex",
+          overflow: "hidden",
           px: { xs: 1.5, sm: 2, md: 3 },
           py: { xs: 1.5, md: 2.5 },
         }}
       >
-        <Grid container spacing={2} sx={{ flex: 1, minHeight: 0 }}>
-          <Grid size={{ xs: 12, md: 4, lg: 3 }} sx={{ minHeight: 0 }}>
+        <Grid
+          container
+          spacing={2}
+          sx={{ flex: "1 1 0", minHeight: 0, overflow: "hidden" }}
+        >
+          <Grid
+            size={{ xs: 12, md: 4, lg: 3 }}
+            sx={{
+              display: "flex",
+              minHeight: 0,
+              overflow: "hidden",
+            }}
+          >
             <Box
               sx={{
                 display: "flex",
                 flexDirection: "column",
                 gap: 2,
-                height: { md: "100%" },
+                flex: "1 1 0",
                 minHeight: 0,
+                overflow: "hidden",
               }}
             >
               <ChatList />
@@ -55,14 +69,22 @@ const ChatPage = () => {
             </Box>
           </Grid>
 
-          <Grid size={{ xs: 12, md: 8, lg: 9 }} sx={{ minHeight: 0 }}>
+          <Grid
+            size={{ xs: 12, md: 8, lg: 9 }}
+            sx={{
+              display: "flex",
+              minHeight: 0,
+              overflow: "hidden",
+            }}
+          >
             <Box
               sx={{
                 display: "flex",
                 flexDirection: "column",
                 gap: 2,
-                height: "100%",
+                flex: "1 1 0",
                 minHeight: 0,
+                overflow: "hidden",
               }}
             >
               <MessageList />
